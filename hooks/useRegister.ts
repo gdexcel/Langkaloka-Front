@@ -22,7 +22,7 @@ export interface RegisterResponse {
   }
 }
 
-export const useRegister = () => {
+export const useRegister = (options?: any) => {
   const registerUser = async (
     payload: RegisterPayload,
   ): Promise<RegisterResponse> => {
@@ -30,11 +30,14 @@ export const useRegister = () => {
     return data
   }
 
-  return useMutation<RegisterResponse, AxiosError<Error>, RegisterPayload>({
+  return useMutation({
     mutationFn: registerUser,
+
     onSuccess: (data) => {
       localStorage.setItem("token", data.token)
+      options?.onSuccess?.(data)
     },
+
     onError: (err) => {
       console.error("Register failed:", err)
     },

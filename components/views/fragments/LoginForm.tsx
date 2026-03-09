@@ -2,9 +2,11 @@
 
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import { useRegister } from "@/hooks/useRegister"
+import { useLogin } from "@/hooks/useLogin"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+
 import {
   Card,
   CardContent,
@@ -12,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+
 import {
   Field,
   FieldDescription,
@@ -19,35 +22,17 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 
-type RegisterForm = {
-  name: string
-  email: string
-  phone: string
-  password: string
-}
-
-export function SignupForm({
+export function LoginForm({
   className,
-  onSuccess,
-  onSwitchToLogin,
   ...props
-}: React.ComponentProps<"div"> & {
-  onSuccess?: () => void
-  onSwitchToLogin?: () => void
-}) {
-  
-  const [form, setForm] = useState<RegisterForm>({
-    name: "",
+}: React.ComponentProps<"div">) {
+
+  const [form, setForm] = useState({
     email: "",
-    phone: "",
     password: "",
   })
 
-const { mutate, isPending } = useRegister({
-  onSuccess: () => {
-    onSuccess?.()
-  },
-})
+  const { mutate, isPending } = useLogin()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,29 +50,19 @@ const { mutate, isPending } = useRegister({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
+
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Create your account</CardTitle>
+          <CardTitle className="text-xl">Login to your account</CardTitle>
           <CardDescription>
-            Enter your email below to create your account
+            Enter your email and password to login
           </CardDescription>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit}>
-            <FieldGroup>
 
-              <Field>
-                <FieldLabel htmlFor="name">Full Name</FieldLabel>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="John Doe"
-                  required
-                  value={form.name}
-                  onChange={handleChange}
-                />
-              </Field>
+            <FieldGroup>
 
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -103,23 +78,11 @@ const { mutate, isPending } = useRegister({
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="phone">Phone</FieldLabel>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+6285xxxx"
-                  required
-                  value={form.phone}
-                  onChange={handleChange}
-                />
-              </Field>
-
-              <Field>
                 <FieldLabel htmlFor="password">Password</FieldLabel>
                 <Input
                   id="password"
                   type="password"
-                  autoComplete="new-password"
+                  autoComplete="current-password"
                   required
                   value={form.password}
                   onChange={handleChange}
@@ -127,25 +90,19 @@ const { mutate, isPending } = useRegister({
               </Field>
 
               <Field>
-                <Button type="submit" disabled={isPending || !isFormValid}>
-                  {isPending ? "Creating account..." : "Create Account"}
+                <Button
+                  type="submit"
+                  disabled={isPending || !isFormValid}
+                >
+                  {isPending ? "Logging in..." : "Login"}
                 </Button>
-
-          <FieldDescription className="text-center">
-  Already have an account?{" "}
-  <span
-    onClick={onSwitchToLogin}
-    className="text-primary cursor-pointer hover:underline"
-  >
-    Login
-  </span>
-</FieldDescription>
               </Field>
-
             </FieldGroup>
+
           </form>
         </CardContent>
       </Card>
+
     </div>
   )
 }
