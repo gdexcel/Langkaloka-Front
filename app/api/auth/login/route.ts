@@ -44,27 +44,24 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const token = jwt.sign(
-      {
-        id: foundUser.id,
-        email: foundUser.email,
-        storeId: foundUser.storeId,
-      },
-      process.env.JWT_SECRET!,
-      { expiresIn: "1d" },
-    )
-
-    return NextResponse.json({
-      message: "Login successful",
-      token,
-      user: {
-        id: foundUser.id,
-        email: foundUser.email,
-        name: foundUser.name,
-        phone: foundUser.phone,
-        storeId: foundUser.storeId,
-      },
-    })
+   const token = jwt.sign(
+{
+  id: foundUser.id,
+  email: foundUser.email,
+},
+process.env.JWT_SECRET!,
+{ expiresIn: "1d" },
+)
+return NextResponse.json({
+  message: "Login successful",
+  token,
+  user: {
+    id: foundUser.id,
+    email: foundUser.email,
+    name: foundUser.name,
+    phone: foundUser.phone,
+  },
+})
   } catch (error) {
     console.error("[LOGIN ERROR]", error)
 
