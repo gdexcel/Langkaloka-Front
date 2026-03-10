@@ -11,8 +11,11 @@ import {
 } from "../ui/dialog"
 import SignupPage from "./Signup"
 import { LoginForm } from "./fragments/LoginForm"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
+
 
 export function Header() {
+  const { data: user } = useCurrentUser()
   const [isLogin, setIsLogin] = useState(true)
 
   return (
@@ -22,7 +25,23 @@ export function Header() {
 
         <Dialog>
           <DialogTrigger asChild>
-            <Button>Login</Button>
+    {user ? (
+  <div className="flex items-center gap-3">
+    <span className="font-medium">Hi {user.email}</span>
+
+    <Button
+      variant="outline"
+      onClick={() => {
+        localStorage.removeItem("token")
+        window.location.reload()
+      }}
+    >
+      Logout
+    </Button>
+  </div>
+) : (
+  <Button>Login</Button>
+)}
           </DialogTrigger>
 
           <DialogContent className="sm:max-w-md">

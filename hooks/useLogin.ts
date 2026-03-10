@@ -28,8 +28,11 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: loginUser,
 
-    onSuccess: (data) => {
+  onSuccess: (data) => {
       localStorage.setItem("token", data.token)
+
+      // reload supaya header update
+      window.location.reload()
     },
 
     onError: (error) => {
