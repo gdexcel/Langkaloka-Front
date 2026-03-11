@@ -34,11 +34,22 @@ export const stores = pgTable("stores", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 })
 
+// CATEGORIES
+export const categories = pgTable("categories", {
+  id: uuid("id").primaryKey().defaultRandom(),
+
+  name: text("name").notNull(),
+
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+})
+
 // PRODUCTS
 export const products = pgTable("products", {
   id: uuid("id").primaryKey().defaultRandom(),
 
   storeId: uuid("store_id").notNull(),
+
+  categoryId: uuid("category_id"),
 
   name: text("name").notNull(),
 
@@ -47,6 +58,8 @@ export const products = pgTable("products", {
   price: integer("price").notNull(),
 
   condition: text("condition"),
+
+  isSold: boolean("is_sold").notNull().default(false),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
 
@@ -60,4 +73,15 @@ export const productImages = pgTable("product_images", {
   productId: uuid("product_id").notNull(),
 
   url: text("url").notNull(),
+})
+
+// FAVORITES
+export const favorites = pgTable("favorites", {
+  id: uuid("id").primaryKey().defaultRandom(),
+
+  userId: uuid("user_id").notNull(),
+
+  productId: uuid("product_id").notNull(),
+
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 })
