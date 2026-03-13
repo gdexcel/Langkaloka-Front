@@ -10,37 +10,63 @@ type Product = {
 export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link href={`/product/${product.id}`}>
+
       <div className="
+        bg-white
         border
         rounded-xl
         overflow-hidden
-        hover:shadow-md
+        hover:shadow-lg
         transition
-        bg-white
         cursor-pointer
+        flex
+        flex-col
       ">
 
-        <div className="bg-gray-100 h-48 flex items-center justify-center text-gray-400 text-sm">
+        {/* IMAGE */}
+        <div className="
+          bg-gray-100
+          h-48
+          flex
+          items-center
+          justify-center
+          text-gray-400
+          text-sm
+        ">
           No Image
         </div>
 
-        <div className="p-4">
+        {/* CONTENT */}
+        <div className="p-4 flex flex-col gap-2">
 
-          <h2 className="font-semibold text-sm">
+          <h2 className="
+            font-semibold
+            text-sm
+            line-clamp-1
+          ">
             {product.name}
           </h2>
 
-          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+          <p className="
+            text-xs
+            text-gray-500
+            line-clamp-2
+          ">
             {product.description}
           </p>
 
-          <p className="font-bold mt-2">
+          <p className="
+            font-bold
+            text-base
+            mt-1
+          ">
             Rp {product.price}
           </p>
 
         </div>
 
       </div>
+
     </Link>
   )
 }

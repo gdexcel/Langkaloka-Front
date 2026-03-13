@@ -12,7 +12,7 @@ export default function Home() {
 
       <Header />
 
-      <div className="max-w-7xl mx-auto w-full p-6">
+   <div className="max-w-7xl mx-auto w-full px-4 md:px-6 py-6">
 
         <h1 className="text-2xl font-bold mb-6">
           Marketplace
@@ -21,13 +21,14 @@ export default function Home() {
         {isLoading && <p>Loading products...</p>}
 
         <div className="
-          grid
-          grid-cols-1
-          sm:grid-cols-2
-          md:grid-cols-3
-          lg:grid-cols-4
-          gap-6
-        ">
+  grid
+  grid-cols-2
+  sm:grid-cols-2
+  md:grid-cols-3
+  lg:grid-cols-4
+  xl:grid-cols-5
+  gap-6
+">
 
           {products?.map((product: any) => (
             <ProductCard

@@ -20,7 +20,17 @@ export function Header() {
 
   return (
     <header className="border-b">
-      <div className="container max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div className="
+container
+max-w-7xl
+mx-auto
+px-4
+md:px-6
+py-4
+flex
+items-center
+justify-between
+">
 
         {/* Logo */}
         <span className="font-bold text-xl">LangkaLoka</span>
