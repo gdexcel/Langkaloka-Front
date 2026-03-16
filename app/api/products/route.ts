@@ -1,16 +1,37 @@
 import { NextResponse } from "next/server"
 import { db } from "@/db/client"
-import { products } from "@/db/schema"
+import { products, productImages } from "@/db/schema"
+import { eq } from "drizzle-orm"
 
 export async function GET() {
+
   try {
-    const allProducts = await db.select().from(products)
+
+    const allProducts = await db
+      .select({
+        id: products.id,
+        name: products.name,
+        description: products.description,
+        price: products.price,
+        image: productImages.url
+      })
+      .from(products)
+      .leftJoin(
+        productImages,
+        eq(products.id, productImages.productId)
+      )
+
     return NextResponse.json(allProducts)
+
   } catch (error) {
+
     console.error(error)
+
     return NextResponse.json(
       { error: "Failed to fetch products" },
       { status: 500 }
     )
+
   }
+
 }

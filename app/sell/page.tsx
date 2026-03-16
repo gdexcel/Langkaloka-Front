@@ -10,37 +10,62 @@ export default function SellPage() {
   const [price, setPrice] = useState("")
   const [description, setDescription] = useState("")
   const [condition, setCondition] = useState("used")
+  const [image, setImage] = useState<File | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
 
-    try {
+  try {
 
-      const token = localStorage.getItem("token")
+    const token = localStorage.getItem("token")
+
+    let imageUrl = null
+
+    if (image) {
+
+      const reader = new FileReader()
+
+      reader.readAsDataURL(image)
+
+      const base64 = await new Promise<string>((resolve) => {
+        reader.onloadend = () => resolve(reader.result as string)
+      })
+
+      const uploadRes = await axios.post("/api/upload", {
+        image: base64
+      })
+
+      imageUrl = uploadRes.data.url
+
+    }
 
     await axios.post(
-  "/api/products/create",
-  {
-    name,
-    description,
-    price: Number(price),
-    condition
-  },
-  {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+      "/api/products/create",
+      {
+        name,
+        description,
+        price: Number(price),
+        condition,
+        image: imageUrl
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    )
+
+    alert("Product created!")
+
+    window.location.href = "/"
+
+  } catch (error) {
+
+    console.error(error)
+
   }
-)
 
-      alert("Product created!")
-
-      window.location.href = "/"
-
-    } catch (error) {
-      console.error(error)
-    }
-  }
+}
 
   return (
     <main className="min-h-screen">
@@ -78,7 +103,16 @@ export default function SellPage() {
       value={description}
       onChange={(e)=>setDescription(e.target.value)}
     />
-
+    <input
+  type="file"
+  accept="image/*"
+  className="border p-3 rounded-lg"
+  onChange={(e) => {
+    if (e.target.files) {
+      setImage(e.target.files[0])
+    }
+  }}
+/>
     <select
       className="border p-3 rounded-lg"
       value={condition}
@@ -87,7 +121,7 @@ export default function SellPage() {
       <option value="new">New</option>
       <option value="used">Used</option>
     </select>
-
+  
     <button
       type="submit"
       className="

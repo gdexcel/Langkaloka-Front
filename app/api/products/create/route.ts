@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/db/client"
-import { products, stores } from "@/db/schema"
+import { products, stores, productImages } from "@/db/schema"
 import { verifyToken } from "@/lib/auth"
 import { eq } from "drizzle-orm"
 
 export async function POST(req: NextRequest) {
+
   try {
 
     const body = await req.json()
-    const { name, description, price, condition, categoryId } = body
+
+    const { name, description, price, condition, image } = body
 
     const authHeader = req.headers.get("authorization")
 
@@ -17,13 +19,14 @@ export async function POST(req: NextRequest) {
     }
 
     const token = authHeader.split(" ")[1]
+
     const decoded = verifyToken(token)
 
     if (!decoded) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // ambil store milik user
+    // cari store milik user
     const store = await db
       .select()
       .from(stores)
@@ -39,14 +42,27 @@ export async function POST(req: NextRequest) {
 
     const storeId = store[0].id
 
-    const [product] = await db.insert(products).values({
-      storeId,
-      categoryId: categoryId ?? null,
-      name,
-      description,
-      price,
-      condition,
-    }).returning()
+    // create product
+    const [product] = await db
+      .insert(products)
+      .values({
+        storeId,
+        name,
+        description,
+        price,
+        condition,
+      })
+      .returning()
+
+    // simpan image jika ada
+    if (image) {
+
+      await db.insert(productImages).values({
+        productId: product.id,
+        url: image
+      })
+
+    }
 
     return NextResponse.json(product)
 
@@ -60,4 +76,5 @@ export async function POST(req: NextRequest) {
     )
 
   }
+
 }

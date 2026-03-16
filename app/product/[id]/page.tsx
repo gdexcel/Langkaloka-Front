@@ -22,11 +22,41 @@ export default function ProductDetailPage() {
 
       <div className="max-w-6xl mx-auto p-6">
 
-        <div className="grid md:grid-cols-2 gap-10">
+     <div className="grid md:grid-cols-2 gap-10 items-start">
+        <div className="w-full max-w-md">
 
-          <div className="bg-gray-100 h-96 flex items-center justify-center">
-            No Image
-          </div>
+   {product.image ? (
+
+  <img
+    src={product.image}
+    className="
+      w-full
+      max-w-lg
+      h-[420px]
+      object-cover
+      rounded-xl
+      border
+    "
+  />
+
+) : (
+
+  <div className="
+    bg-gray-100
+    w-full
+    max-w-lg
+    h-[420px]
+    flex
+    items-center
+    justify-center
+    rounded-xl
+  ">
+    No Image
+  </div>
+
+)}
+</div>
+
 
           <div>
 

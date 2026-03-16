@@ -8,6 +8,7 @@ type Product = {
   description: string
   price: number
   condition?: string
+  image?: string
 }
 
 export default function ProductCard({ product }: { product: Product }) {
@@ -15,30 +16,49 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link href={`/product/${product.id}`}>
 
-<div className="
-  border
-  rounded-xl
-  overflow-hidden
-  hover:shadow-lg
-  hover:-translate-y-1
-  transition-all
-  duration-200
-  bg-white
-  cursor-pointer
-">
+      <div
+        className="
+        border
+        rounded-xl
+        overflow-hidden
+        hover:shadow-lg
+        hover:-translate-y-1
+        transition-all
+        duration-200
+        bg-white
+        cursor-pointer
+      "
+      >
 
         {/* IMAGE */}
-        <div className="
-          bg-gray-100
-          aspect-square
-          flex
-          items-center
-          justify-center
-          text-gray-400
-          text-sm
-        ">
-          No Image
-        </div>
+        {product.image ? (
+
+          <img
+            src={product.image}
+            className="
+              aspect-square
+              w-full
+              object-cover
+            "
+          />
+
+        ) : (
+
+          <div
+            className="
+            bg-gray-100
+            aspect-square
+            flex
+            items-center
+            justify-center
+            text-gray-400
+            text-sm
+          "
+          >
+            No Image
+          </div>
+
+        )}
 
         {/* CONTENT */}
         <div className="p-3 flex flex-col gap-1">
