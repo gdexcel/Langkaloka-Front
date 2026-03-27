@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation"
 import { useProduct } from "@/hooks/useProduct"
 import { Header } from "@/components/views/Header"
+import Link from "next/link"
 
 export default function ProductDetailPage() {
 
@@ -63,6 +64,12 @@ export default function ProductDetailPage() {
             <h1 className="text-3xl font-bold">
               {product.name}
             </h1>
+            {/* LINK KE STORE */}
+  <Link href={`/store/${product.storeId}`}>
+    <p className="text-sm text-blue-500 mt-2 cursor-pointer hover:underline">
+      Kunjungi Toko
+    </p>
+  </Link>
 
             <p className="text-xl font-semibold mt-3">
               Rp {product.price}

@@ -1,25 +1,36 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/db/client"
-import { products, productImages } from "@/db/schema"
+import { stores, products, productImages } from "@/db/schema"
 import { eq } from "drizzle-orm"
 
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-
   try {
 
     const { id } = await context.params
 
-    const product = await db
+    // ambil store
+    const store = await db
+      .select()
+      .from(stores)
+      .where(eq(stores.id, id))
+      .limit(1)
+
+    if (!store.length) {
+      return NextResponse.json(
+        { error: "Store not found" },
+        { status: 404 }
+      )
+    }
+
+    // ambil products dari store + image
+    const storeProducts = await db
       .select({
         id: products.id,
-        storeId: products.storeId,
         name: products.name,
-        description: products.description,
         price: products.price,
-        condition: products.condition,
         image: productImages.url
       })
       .from(products)
@@ -27,29 +38,21 @@ export async function GET(
         productImages,
         eq(products.id, productImages.productId)
       )
-      .where(eq(products.id, id))
-      .limit(1)
+      .where(eq(products.storeId, id))
 
-    if (!product.length) {
-
-      return NextResponse.json(
-        { error: "Product not found" },
-        { status: 404 }
-      )
-
-    }
-
-    return NextResponse.json(product[0])
+    return NextResponse.json({
+      store: store[0],
+      products: storeProducts
+    })
 
   } catch (error) {
 
     console.error(error)
 
     return NextResponse.json(
-      { error: "Failed to fetch product" },
+      { error: "Failed to fetch store" },
       { status: 500 }
     )
 
   }
-
 }
