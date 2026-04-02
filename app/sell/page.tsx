@@ -156,15 +156,15 @@ useEffect(() => {
   
     <button
       type="submit"
-      className="
-        bg-black
-        text-red
-        py-3
-        rounded-lg
-        mt-4
-        hover:bg-red-800
-        transition
-      "
+    className="
+  bg-black
+  text-white
+  py-3
+  rounded-lg
+  mt-4
+  hover:bg-gray-800
+  transition
+"
     >
       Publish Product
     </button>

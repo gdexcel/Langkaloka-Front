@@ -4,6 +4,7 @@ import { useParams } from "next/navigation"
 import { useProduct } from "@/hooks/useProduct"
 import { Header } from "@/components/views/Header"
 import Link from "next/link"
+import axios from "axios"
 
 export default function ProductDetailPage() {
 
@@ -15,6 +16,34 @@ export default function ProductDetailPage() {
   if (isLoading) return <p>Loading...</p>
 
   if (!product) return <p>Product not found</p>
+  const isOwner = true // sementara hardcode dulu (nanti kita fix)
+
+const markAsSold = async () => {
+
+  const token = localStorage.getItem("token")
+
+  if (!token) {
+    alert("Login dulu")
+    return
+  }
+
+  try {
+
+    await axios.patch(`/api/products/${id}`, {}, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    alert("Produk berhasil ditandai SOLD")
+
+    window.location.reload()
+
+  } catch (error) {
+    console.error(error)
+  }
+
+}
 
   return (
     <main className="min-h-screen">
@@ -28,17 +57,20 @@ export default function ProductDetailPage() {
 
    {product.image ? (
 
+<div className="relative">
+
   <img
     src={product.image}
-    className="
-      w-full
-      max-w-lg
-      h-[420px]
-      object-cover
-      rounded-xl
-      border
-    "
+    className="w-full max-w-lg h-[420px] object-cover rounded-xl border"
   />
+
+  {product.isSold && (
+    <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded">
+      SOLD
+    </div>
+  )}
+
+</div>
 
 ) : (
 
@@ -59,31 +91,40 @@ export default function ProductDetailPage() {
 </div>
 
 
-          <div>
+        <div className="flex flex-col gap-3">
 
-            <h1 className="text-3xl font-bold">
-              {product.name}
-            </h1>
-            {/* LINK KE STORE */}
+  <h1 className="text-3xl font-bold">
+    {product.name}
+  </h1>
+
   <Link href={`/store/${product.storeId}`}>
-    <p className="text-sm text-blue-500 mt-2 cursor-pointer hover:underline">
+    <p className="text-sm text-blue-500 cursor-pointer hover:underline">
       Kunjungi Toko
     </p>
   </Link>
 
-            <p className="text-xl font-semibold mt-3">
-              Rp {product.price}
-            </p>
+  <p className="text-xl font-semibold">
+    Rp {product.price}
+  </p>
 
-            <p className="mt-4 text-gray-600">
-              {product.description}
-            </p>
+  <p className="text-gray-600">
+    {product.description}
+  </p>
 
-            <button className="mt-6 bg-black text-white px-6 py-3 rounded-lg">
-              Chat Seller
-            </button>
+  <button className="mt-6 bg-black text-white px-6 py-3 rounded-lg">
+  Chat Seller
+</button>
 
-          </div>
+{isOwner && !product.isSold && (
+  <button
+    onClick={markAsSold}
+    className="mt-3 bg-red-600 text-white px-6 py-3 rounded-lg"
+  >
+    Tandai Terjual
+  </button>
+)}
+
+</div>
 
         </div>
 

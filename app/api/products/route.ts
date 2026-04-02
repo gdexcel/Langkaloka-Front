@@ -20,6 +20,7 @@ export async function GET() {
         productImages,
         eq(products.id, productImages.productId)
       )
+      .where(eq(products.isSold, false)) // 🔥 DISINI
 
     return NextResponse.json(allProducts)
 

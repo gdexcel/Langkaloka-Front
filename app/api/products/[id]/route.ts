@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/db/client"
 import { products, productImages } from "@/db/schema"
 import { eq } from "drizzle-orm"
+import { verifyToken } from "@/lib/auth"
 
 export async function GET(
   req: NextRequest,
@@ -20,7 +21,8 @@ export async function GET(
         description: products.description,
         price: products.price,
         condition: products.condition,
-        image: productImages.url
+       image: productImages.url,
+       isSold: products.isSold
       })
       .from(products)
       .leftJoin(
@@ -51,5 +53,54 @@ export async function GET(
     )
 
   }
+}
 
+export async function PATCH(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+
+  try {
+
+    const { id } = await context.params
+
+    const authHeader = req.headers.get("authorization")
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
+
+    const token = authHeader.split(" ")[1]
+    const decoded = verifyToken(token)
+
+    if (!decoded) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
+
+    // 🔥 UPDATE JADI SOLD
+    await db
+      .update(products)
+      .set({ isSold: true })
+      .where(eq(products.id, id))
+
+    return NextResponse.json({
+      message: "Product marked as sold"
+    })
+
+  } catch (error) {
+
+    console.error(error)
+
+    return NextResponse.json(
+      { error: "Failed to mark as sold" },
+      { status: 500 }
+    )
+
+  }
 }
