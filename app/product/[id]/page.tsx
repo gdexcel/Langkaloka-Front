@@ -1,5 +1,6 @@
 "use client"
 
+import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { useParams } from "next/navigation"
 import { useProduct } from "@/hooks/useProduct"
 import { Header } from "@/components/views/Header"
@@ -12,11 +13,12 @@ export default function ProductDetailPage() {
   const id = params.id as string
 
   const { data: product, isLoading } = useProduct(id)
+  const { data: user } = useCurrentUser()
+  const isOwner = user && product ? user.id === product.storeOwnerId : false
 
   if (isLoading) return <p>Loading...</p>
 
   if (!product) return <p>Product not found</p>
-  const isOwner = true // sementara hardcode dulu (nanti kita fix)
 
 const markAsSold = async () => {
 
@@ -42,8 +44,10 @@ const markAsSold = async () => {
   } catch (error) {
     console.error(error)
   }
+  
 
 }
+
 
   return (
     <main className="min-h-screen">
@@ -111,14 +115,18 @@ const markAsSold = async () => {
     {product.description}
   </p>
 
-  <button className="mt-6 bg-black text-white px-6 py-3 rounded-lg">
+ <button
+  style={{ backgroundColor: "black", color: "white" }}
+  className="mt-6 px-6 py-3 rounded-lg shadow-md"
+>
   Chat Seller
 </button>
 
 {isOwner && !product.isSold && (
   <button
     onClick={markAsSold}
-    className="mt-3 bg-red-600 text-white px-6 py-3 rounded-lg"
+    style={{ backgroundColor: "#dc2626", color: "white" }}
+    className="mt-3 px-6 py-3 rounded-lg shadow-md"
   >
     Tandai Terjual
   </button>
