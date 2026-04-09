@@ -45,6 +45,36 @@ const markAsSold = async () => {
     console.error(error)
   }
   
+}
+const handleChat = async () => {
+
+  const token = localStorage.getItem("token")
+
+  if (!token) {
+    alert("Login dulu")
+    return
+  }
+
+  try {
+
+    const res = await axios.post(
+      "/api/chat/create",
+      { productId: id },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    )
+
+    const chatId = res.data.id
+
+    // 🔥 redirect ke halaman chat
+    window.location.href = `/chat/${chatId}`
+
+  } catch (error) {
+    console.error(error)
+  }
 
 }
 
@@ -116,12 +146,12 @@ const markAsSold = async () => {
   </p>
 
  <button
+  onClick={handleChat}
   style={{ backgroundColor: "black", color: "white" }}
   className="mt-6 px-6 py-3 rounded-lg shadow-md"
 >
   Chat Seller
 </button>
-
 {isOwner && !product.isSold && (
   <button
     onClick={markAsSold}

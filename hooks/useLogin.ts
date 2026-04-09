@@ -29,6 +29,7 @@ export const useLogin = () => {
 
   onSuccess: (data) => {
       localStorage.setItem("token", data.token)
+      localStorage.setItem("userId", data.user.id)
 
       // reload supaya header update
       window.location.reload()

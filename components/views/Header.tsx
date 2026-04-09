@@ -52,6 +52,11 @@ justify-between
       </Button>
     </Link>
   )}
+  {user && (
+  <Link href="/chat">
+    <Button>Chat</Button>
+  </Link>
+)}
 
   {/* Login Dialog */}
   <Dialog>
