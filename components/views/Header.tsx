@@ -57,7 +57,6 @@ justify-between
     <Button>Chat</Button>
   </Link>
 )}
-
   {/* Login Dialog */}
   <Dialog>
 

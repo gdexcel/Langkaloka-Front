@@ -1,7 +1,7 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import axios from "axios"
 import { Header } from "@/components/views/Header"
 
@@ -13,6 +13,9 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<any[]>([])
   const [text, setText] = useState("")
 
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
   // 🔥 ambil message
   const fetchMessages = async () => {
     try {
@@ -23,12 +26,37 @@ export default function ChatPage() {
     }
   }
 
+  // 🔥 pertama kali load
   useEffect(() => {
     fetchMessages()
-  }, [])
+  }, [chatId])
+
+  // 🔥 auto refresh tiap 2 detik
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchMessages()
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [chatId])
+
+  // 🔥 auto scroll (AMAN, gak ganggu user)
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const isAtBottom =
+      container.scrollHeight - container.scrollTop <= container.clientHeight + 50
+
+    if (isAtBottom) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [messages])
 
   // 🔥 kirim message
   const sendMessage = async () => {
+
+    if (!text.trim()) return
 
     const token = localStorage.getItem("token")
 
@@ -38,7 +66,6 @@ export default function ChatPage() {
     }
 
     try {
-
       await axios.post(
         `/api/chat/${chatId}`,
         { text },
@@ -55,7 +82,6 @@ export default function ChatPage() {
     } catch (error) {
       console.error(error)
     }
-
   }
 
   return (
@@ -70,33 +96,37 @@ export default function ChatPage() {
         </h1>
 
         {/* 🔥 MESSAGE LIST */}
-        <div className="border rounded-lg p-4 h-[400px] overflow-y-auto flex flex-col gap-2">
-{messages.map((msg) => {
+        <div
+          ref={containerRef}
+          className="border rounded-lg p-4 h-[400px] overflow-y-auto flex flex-col gap-2"
+        >
 
-  const myId = localStorage.getItem("userId")
+          {messages.map((msg) => {
+            const myId = localStorage.getItem("userId")
+            const isMe = msg.senderId === myId
 
-  console.log("MY ID:", myId)
-  console.log("SENDER ID:", msg.senderId)
+            return (
+              <div
+                key={msg.id}
+                className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`
+                    px-4 py-2 rounded-2xl max-w-[70%] text-sm
+                    ${isMe 
+                      ? "bg-black text-white rounded-br-none" 
+                      : "bg-gray-200 text-black rounded-bl-none"
+                    }
+                  `}
+                >
+                  {msg.text}
+                </div>
+              </div>
+            )
+          })}
 
-  const isMe = msg.senderId === myId
-
-  return (
-    <div
-      key={msg.id}
-      className={isMe ? "flex justify-end" : "flex justify-start"}
-    >
-      <div
-        className={
-          isMe
-            ? "bg-black text-white px-4 py-2 rounded-lg max-w-[70%]"
-            : "bg-gray-200 text-black px-4 py-2 rounded-lg max-w-[70%]"
-        }
-      >
-        {msg.text}
-      </div>
-    </div>
-  )
-})}
+          {/* 🔥 anchor scroll */}
+          <div ref={bottomRef} />
 
         </div>
 
@@ -108,6 +138,11 @@ export default function ChatPage() {
             placeholder="Ketik pesan..."
             value={text}
             onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                sendMessage()
+              }
+            }}
           />
 
           <button
