@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   try {
 
     const body = await req.json()
-    const { name, description } = body
+   const { name, description, image, location } = body
 
     if (!name) {
       return NextResponse.json(
@@ -53,10 +53,12 @@ export async function POST(req: NextRequest) {
 
     // 🔥 CREATE STORE
     const [store] = await db.insert(stores).values({
-      name,
-      description,
-      ownerId: decoded.id,
-    }).returning()
+  name,
+  description,
+  image,
+  location,
+  ownerId: decoded.id,
+}).returning()
 
     return NextResponse.json(store)
 

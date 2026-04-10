@@ -23,18 +23,37 @@ export default function StorePage() {
 
       <div className="max-w-6xl mx-auto p-6">
 
-        {/* STORE INFO */}
-        <div className="mb-8">
+     {/* STORE INFO */}
+<div className="flex items-center gap-4 mb-8">
 
-          <h1 className="text-3xl font-bold">
-            {data.store.name}
-          </h1>
+  {/* 🔥 FOTO TOKO */}
+  {data.store.image ? (
+    <img
+      src={data.store.image}
+      className="w-20 h-20 rounded-full object-cover border shadow"
+    />
+  ) : (
+    <div className="w-20 h-20 bg-gray-200 rounded-full" />
+  )}
 
-          <p className="text-gray-500 mt-2">
-            {data.store.description}
-          </p>
+  {/* 🔥 INFO TOKO */}
+  <div>
 
-        </div>
+    <h1 className="text-3xl font-bold">
+      {data.store.name}
+    </h1>
+
+    <p className="text-gray-500">
+      {data.store.description}
+    </p>
+
+    <p className="text-sm text-gray-400 mt-1">
+      📍 {data.store.location || "Lokasi belum diisi"}
+    </p>
+
+  </div>
+
+</div>
 
         {/* PRODUCTS */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

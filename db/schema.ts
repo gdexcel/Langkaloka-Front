@@ -21,12 +21,15 @@ export const users = pgTable("users", {
 // STORES
 export const stores = pgTable("stores", {
   id: uuid("id").primaryKey().defaultRandom(),
-
+  
   ownerId: uuid("owner_id").notNull(),
 
   name: text("name").notNull(),
 
   description: text("description"),
+
+  image: text("image"), // 🔥 TAMBAH
+  location: text("location"), // 🔥 TAMBAH
 
   isActive: boolean("is_active").notNull().default(true),
 
