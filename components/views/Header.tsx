@@ -37,12 +37,14 @@ justify-between
 {/* Right side */}
 <div className="flex items-center gap-4">
 
-  {/* Sell button */}
   {user && (
-    <Link href="/sell">
-      <Button>Jualan Yuk!</Button>
-    </Link>
-  )}
+  <button
+    onClick={() => window.location.href = "/store-panel"}
+    className="px-4 py-2 bg-gray-800 text-white rounded-lg"
+  >
+    Seller Panel
+  </button>
+)}
 
   {/* Wishlist */}
   {user && (
