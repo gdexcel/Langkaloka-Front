@@ -1,139 +1,64 @@
 "use client"
 
+import { useStoreStats } from "@/hooks/useStoreStats"
 import { useEffect, useState } from "react"
-import axios from "axios"
-import { Header } from "@/components/views/Header"
 
 export default function StorePanelPage() {
 
-  const [products, setProducts] = useState<any[]>([])
-
-  const fetchProducts = async () => {
-    try {
-
-      const token = localStorage.getItem("token")
-
-      const res = await axios.get("/api/seller/products", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-
-      setProducts(res.data)
-
-    } catch (error) {
-      console.error(error)
-    }
-  }
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    fetchProducts()
+    setMounted(true)
   }, [])
 
-  const markAsSold = async (id: string) => {
-    try {
+  const { data, isLoading } = useStoreStats()
 
-      const token = localStorage.getItem("token")
+  // 🔥 FIX HYDRATION
+  if (!mounted) return null
 
-      await axios.patch(`/api/products/${id}`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-
-      alert("Ditandai SOLD")
-
-      fetchProducts()
-
-    } catch (error) {
-      console.error(error)
-    }
+  if (isLoading) {
+    return (
+      <div>
+        <p>Loading...</p>
+      </div>
+    )
   }
-  const deleteProduct = async (id: string) => {
-  const confirmDelete = confirm("Yakin mau hapus produk ini?")
-
-  if (!confirmDelete) return
-
-  try {
-
-    const token = localStorage.getItem("token")
-
-    await axios.delete(`/api/products/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-
-    alert("Produk berhasil dihapus")
-
-    fetchProducts()
-
-  } catch (error) {
-    console.error(error)
-  }
-}
 
   return (
-    <main className="min-h-screen">
+    <div>
 
-      <div className="max-w-6xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">
+        Dashboard
+      </h1>
 
-        <h1 className="text-2xl font-bold mb-6">
-          Seller Panel
-        </h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {/* TOTAL */}
+        <div className="border p-6 rounded-xl shadow-sm">
+          <p className="text-gray-500 text-sm">Total Produk</p>
+          <p className="text-3xl font-bold">
+            {data?.total ?? 0}
+          </p>
+        </div>
 
-          {products.map((product) => (
-            <div key={product.id} className="border rounded-lg p-3">
+        {/* SOLD */}
+        <div className="border p-6 rounded-xl shadow-sm">
+          <p className="text-gray-500 text-sm">Terjual</p>
+          <p className="text-3xl font-bold text-red-500">
+            {data?.sold ?? 0}
+          </p>
+        </div>
 
-              {product.image ? (
-                <img
-                  src={product.image}
-                  className="w-full h-40 object-cover rounded"
-                />
-              ) : (
-                <div className="h-40 bg-gray-100 flex items-center justify-center">
-                  No Image
-                </div>
-              )}
-
-              <p className="mt-2 font-semibold">
-                {product.name}
-              </p>
-
-              <p className="text-sm">
-                Rp {product.price}
-              </p>
-
-           {product.isSold ? (
-  <p className="text-red-500 mt-2 font-bold">
-    SOLD
-  </p>
-) : (
-  <button
-    onClick={() => markAsSold(product.id)}
-    className="mt-2 bg-red-600 text-white px-3 py-1 rounded"
-  >
-    Tandai Sold
-  </button>
-)}
-
-{/* 🔥 DELETE BUTTON */}
-<button
-  onClick={() => deleteProduct(product.id)}
-  className="mt-2 bg-gray-800 text-white px-3 py-1 rounded"
->
-  Delete
-</button>
-
-            </div>
-          ))}
-
+        {/* ACTIVE */}
+        <div className="border p-6 rounded-xl shadow-sm">
+          <p className="text-gray-500 text-sm">Masih Dijual</p>
+          <p className="text-3xl font-bold text-green-600">
+            {data?.active ?? 0}
+          </p>
         </div>
 
       </div>
 
-    </main>
+    </div>
   )
 }

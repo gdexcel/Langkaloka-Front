@@ -24,12 +24,12 @@ export default function StorePanelLayout({
             Dashboard
           </button>
 
-          <button
-            onClick={() => window.location.href = "/store-panel"}
-            className="text-left hover:bg-gray-100 p-2 rounded"
-          >
-            Produk Saya
-          </button>
+        <button
+  onClick={() => window.location.href = "/store-panel/products"}
+  className="text-left hover:bg-gray-100 p-2 rounded"
+>
+  Produk Saya
+</button>
 
           <button
             onClick={() => window.location.href = "/sell"}
