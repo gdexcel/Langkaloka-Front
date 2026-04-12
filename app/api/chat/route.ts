@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/db/client"
 import { chats } from "@/db/schema"
-import { eq, or } from "drizzle-orm"
+import { eq, or, desc } from "drizzle-orm"
 import { verifyToken } from "@/lib/auth"
 
 export async function GET(req: NextRequest) {
@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
           eq(chats.sellerId, userId)
         )
       )
+      .orderBy(desc(chats.updatedAt)) // 🔥 INI KUNCI
 
     return NextResponse.json(userChats)
 

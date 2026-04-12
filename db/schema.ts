@@ -100,6 +100,7 @@ export const chats = pgTable("chats", {
   sellerId: uuid("seller_id").notNull(),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 })
 
 // MESSAGES

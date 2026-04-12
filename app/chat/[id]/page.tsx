@@ -4,6 +4,7 @@ import { useParams } from "next/navigation"
 import { useEffect, useState, useRef } from "react"
 import axios from "axios"
 import { Header } from "@/components/views/Header"
+import Pusher from "pusher-js"
 
 export default function ChatPage() {
 
@@ -13,47 +14,56 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<any[]>([])
   const [text, setText] = useState("")
 
-  const bottomRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // 🔥 ambil message
+  // 🔥 FETCH AWAL
   const fetchMessages = async () => {
     try {
       const res = await axios.get(`/api/chat/${chatId}`)
-      setMessages(res.data)
+      setMessages(res.data) // ❌ jangan reverse
     } catch (error) {
       console.error(error)
     }
   }
 
-  // 🔥 pertama kali load
   useEffect(() => {
     fetchMessages()
   }, [chatId])
 
-  // 🔥 auto refresh tiap 2 detik
+  // 🔥 REALTIME PUSHER
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchMessages()
-    }, 2000)
 
-    return () => clearInterval(interval)
+    const pusher = new Pusher(
+      process.env.NEXT_PUBLIC_PUSHER_KEY!,
+      {
+        cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!
+      }
+    )
+
+    const channel = pusher.subscribe(`chat-${chatId}`)
+
+    channel.bind("new-message", (data: any) => {
+      setMessages((prev) => [...prev, data]) // ✅ ke bawah
+    })
+
+    return () => {
+      pusher.unsubscribe(`chat-${chatId}`)
+    }
+
   }, [chatId])
 
-  // 🔥 auto scroll (AMAN, gak ganggu user)
+  // 🔥 AUTO SCROLL KE BAWAH
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
-    const isAtBottom =
-      container.scrollHeight - container.scrollTop <= container.clientHeight + 50
-
-    if (isAtBottom) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-    }
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: "smooth"
+    })
   }, [messages])
 
-  // 🔥 kirim message
+  // 🔥 SEND MESSAGE
   const sendMessage = async () => {
 
     if (!text.trim()) return
@@ -77,7 +87,6 @@ export default function ChatPage() {
       )
 
       setText("")
-      fetchMessages()
 
     } catch (error) {
       console.error(error)
@@ -124,9 +133,6 @@ export default function ChatPage() {
               </div>
             )
           })}
-
-          {/* 🔥 anchor scroll */}
-          <div ref={bottomRef} />
 
         </div>
 

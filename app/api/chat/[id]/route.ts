@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/db/client"
-import { messages } from "@/db/schema"
+import { messages, chats } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { verifyToken } from "@/lib/auth"
+import { pusher } from "@/lib/pusher"
 
 // 🔥 GET → ambil semua message
 export async function GET(
@@ -53,6 +54,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // 🔥 INSERT MESSAGE
     const [message] = await db
       .insert(messages)
       .values({
@@ -61,6 +63,15 @@ export async function POST(
         text
       })
       .returning()
+
+    // 🔥 UPDATE CHAT (BIAR NAIK KE ATAS)
+    await db
+      .update(chats)
+      .set({ updatedAt: new Date() })
+      .where(eq(chats.id, id))
+
+    // 🔥 PUSHER REALTIME
+    await pusher.trigger(`chat-${id}`, "new-message", message)
 
     return NextResponse.json(message)
 
