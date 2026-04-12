@@ -114,6 +114,7 @@ export const messages = pgTable("messages", {
   text: text("text").notNull(),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  readAt: timestamp("read_at")
 })
 
 export const storeRatings = pgTable("store_ratings", {

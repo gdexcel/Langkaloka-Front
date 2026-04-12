@@ -71,7 +71,16 @@ export async function POST(
       .where(eq(chats.id, id))
 
     // 🔥 PUSHER REALTIME
-    await pusher.trigger(`chat-${id}`, "new-message", message)
+  // 🔥 PUSHER CHAT ROOM
+await pusher.trigger(`chat-${id}`, "new-message", message)
+
+// 🔥 PUSHER CHAT LIST
+await pusher.trigger("chat-list", "update", {
+  chatId: id,
+  senderId: decoded.id,
+  text
+})
+console.log("🔥 PUSHER CHAT LIST TRIGGERED", id)
 
     return NextResponse.json(message)
 
