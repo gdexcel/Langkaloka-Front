@@ -1,4 +1,11 @@
-import { boolean, pgTable, text, timestamp, uuid, integer  } from "drizzle-orm/pg-core"
+import {
+  boolean,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  integer,
+} from "drizzle-orm/pg-core";
 
 // USERS
 export const users = pgTable("users", {
@@ -15,8 +22,7 @@ export const users = pgTable("users", {
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-})
-
+});
 
 // STORES
 export const stores = pgTable("stores", {
@@ -35,7 +41,7 @@ export const stores = pgTable("stores", {
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-})
+});
 
 // CATEGORIES
 export const categories = pgTable("categories", {
@@ -44,7 +50,7 @@ export const categories = pgTable("categories", {
   name: text("name").notNull(),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
-})
+});
 
 // PRODUCTS
 export const products = pgTable("products", {
@@ -67,7 +73,7 @@ export const products = pgTable("products", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-})
+});
 
 // PRODUCT IMAGES
 export const productImages = pgTable("product_images", {
@@ -76,7 +82,7 @@ export const productImages = pgTable("product_images", {
   productId: uuid("product_id").notNull(),
 
   url: text("url").notNull(),
-})
+});
 
 // FAVORITES
 export const favorites = pgTable("favorites", {
@@ -87,7 +93,7 @@ export const favorites = pgTable("favorites", {
   productId: uuid("product_id").notNull(),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
-})
+});
 
 // CHATS
 export const chats = pgTable("chats", {
@@ -101,7 +107,7 @@ export const chats = pgTable("chats", {
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-})
+});
 
 // MESSAGES
 export const messages = pgTable("messages", {
@@ -114,9 +120,10 @@ export const messages = pgTable("messages", {
   text: text("text").notNull(),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  readAt: timestamp("read_at")
-})
+  readAt: timestamp("read_at"),
+});
 
+// Store Rating
 export const storeRatings = pgTable("store_ratings", {
   id: uuid("id").defaultRandom().primaryKey(),
 
@@ -125,5 +132,5 @@ export const storeRatings = pgTable("store_ratings", {
 
   rating: integer("rating").notNull(), // 1 - 5
 
-  createdAt: timestamp("created_at").defaultNow()
-})
+  createdAt: timestamp("created_at").defaultNow(),
+});
