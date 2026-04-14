@@ -1,63 +1,61 @@
-import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/db/client"
-import { messages, chats, users } from "@/db/schema"
-import { eq } from "drizzle-orm"
-import { verifyToken } from "@/lib/auth"
-import { pusher } from "@/lib/pusher"
-import { sendEmail } from "@/lib/mailer"
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db/client';
+import { messages, chats, users } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+import { verifyToken } from '@/lib/auth';
+import { pusher } from '@/lib/pusher';
+import { sendEmail } from '@/lib/mailer';
 
 // 🔥 IMPORT ONLINE CHECK
-import { isUserOnline } from "@/app/api/user/online/route"
+import { isUserOnline } from '@/app/api/user/online/route';
 
 // 🔥 ANTI SPAM EMAIL
-const emailCooldown = new Map<string, number>()
+const emailCooldown = new Map<string, number>();
 
 // 🔥 GET → ambil semua message
 export async function GET(
   req: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id } = await context.params
+    const { id } = await context.params;
 
     const allMessages = await db
       .select()
       .from(messages)
-      .where(eq(messages.chatId, id))
+      .where(eq(messages.chatId, id));
 
-    return NextResponse.json(allMessages)
-
+    return NextResponse.json(allMessages);
   } catch (error) {
-    console.error(error)
+    console.error(error);
     return NextResponse.json(
-      { error: "Failed to fetch messages" },
-      { status: 500 }
-    )
+      { error: 'Failed to fetch messages' },
+      { status: 500 },
+    );
   }
 }
 
 // 🔥 POST → kirim message
 export async function POST(
   req: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await context.params;
+    const body = await req.json();
+    const { text } = body;
 
-    const { id } = await context.params
-    const body = await req.json()
-    const { text } = body
+    const authHeader = req.headers.get('authorization');
 
-    const authHeader = req.headers.get("authorization")
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const token = authHeader.split(" ")[1]
-    const decoded = verifyToken(token)
+    const token = authHeader.split(' ')[1];
+    const decoded = verifyToken(token);
 
     if (!decoded) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // 🔥 INSERT MESSAGE
@@ -66,27 +64,37 @@ export async function POST(
       .values({
         chatId: id,
         senderId: decoded.id,
-        text
+        text,
       })
-      .returning()
+      .returning();
 
     // 🔥 UPDATE CHAT
     await db
       .update(chats)
       .set({ updatedAt: new Date() })
-      .where(eq(chats.id, id))
+      .where(eq(chats.id, id));
 
     // 🔥 PUSHER CHAT ROOM
-    await pusher.trigger(`chat-${id}`, "new-message", message)
+    await pusher.trigger(`chat-${id}`, 'new-message', message);
+
+    const chatDataForRealtime = await db
+      .select()
+      .from(chats)
+      .where(eq(chats.id, id))
+      .limit(1);
+
+    const chatRealtime = chatDataForRealtime[0];
 
     // 🔥 PUSHER CHAT LIST
-    await pusher.trigger("chat-list", "update", {
+    await pusher.trigger('chat-list', 'update', {
       chatId: id,
       senderId: decoded.id,
-      text
-    })
+      buyerId: chatRealtime?.buyerId,
+      sellerId: chatRealtime?.sellerId,
+      text,
+    });
 
-    console.log("🔥 PUSHER CHAT LIST TRIGGERED", id)
+    console.log('🔥 PUSHER CHAT LIST TRIGGERED', id);
 
     // ===============================
     // 🔥 EMAIL NOTIFICATION (FINAL + ONLINE CHECK)
@@ -96,36 +104,33 @@ export async function POST(
         .select()
         .from(chats)
         .where(eq(chats.id, id))
-        .limit(1)
+        .limit(1);
 
-      const chat = chatData[0]
+      const chat = chatData[0];
 
       if (chat) {
         const otherUserId =
-          chat.buyerId === decoded.id ? chat.sellerId : chat.buyerId
+          chat.buyerId === decoded.id ? chat.sellerId : chat.buyerId;
 
         const otherUserData = await db
           .select()
           .from(users)
           .where(eq(users.id, otherUserId))
-          .limit(1)
+          .limit(1);
 
-        const otherUser = otherUserData[0]
+        const otherUser = otherUserData[0];
 
         if (otherUser?.email) {
-
           // 🟢 STEP 3: CHECK ONLINE
           if (isUserOnline(otherUser.id)) {
-            console.log("🟢 USER ONLINE → SKIP EMAIL")
+            console.log('🟢 USER ONLINE → SKIP EMAIL');
           } else {
-
             // 🔥 ANTI SPAM
-            const now = Date.now()
-            const lastSent = emailCooldown.get(otherUser.id) || 0
+            const now = Date.now();
+            const lastSent = emailCooldown.get(otherUser.id) || 0;
 
             if (now - lastSent > 15000) {
-
-              emailCooldown.set(otherUser.id, now)
+              emailCooldown.set(otherUser.id, now);
 
               // ✨ EMAIL DESIGN
               const html = `
@@ -165,33 +170,31 @@ export async function POST(
 
                   </div>
                 </div>
-              `
+              `;
 
               await sendEmail(
                 otherUser.email,
-                "Pesan Baru di LangkaLoka 💬",
-                html
-              )
+                'Pesan Baru di LangkaLoka 💬',
+                html,
+              );
 
-              console.log("📩 EMAIL SENT (OFFLINE USER)")
+              console.log('📩 EMAIL SENT (OFFLINE USER)');
             } else {
-              console.log("⏳ EMAIL SKIPPED (COOLDOWN)")
+              console.log('⏳ EMAIL SKIPPED (COOLDOWN)');
             }
           }
         }
       }
-
     } catch (err) {
-      console.log("❌ EMAIL ERROR (gapapa):", err)
+      console.log('❌ EMAIL ERROR (gapapa):', err);
     }
 
-    return NextResponse.json(message)
-
+    return NextResponse.json(message);
   } catch (error) {
-    console.error(error)
+    console.error(error);
     return NextResponse.json(
-      { error: "Failed to send message" },
-      { status: 500 }
-    )
+      { error: 'Failed to send message' },
+      { status: 500 },
+    );
   }
 }

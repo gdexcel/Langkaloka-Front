@@ -1,8 +1,7 @@
-# TODO - Navbar Simplification & Modernization
+# TODO - Fix Chat Notification Badge & Sound
 
-- [x] Refactor `components/views/Header.tsx` into a simpler single-topbar modern navbar layout
-- [x] Keep all existing front-end functionality intact (search, auth dialog, chat notif, routing, logout)
-- [x] Simplify desktop nav visual style and hierarchy
-- [x] Simplify mobile menu panel style and interactions
-- [ ] Run frontend critical-path testing for navbar flows
-- [x] Update this TODO with completion status
+- [x] Update backend pusher payload in `app/api/chat/[id]/route.ts` to include `buyerId` and `sellerId`.
+- [x] Harden ID comparison in `components/views/Header.tsx` using string normalization.
+- [x] Add route-based badge reset when entering `/chat` in `components/views/Header.tsx`.
+- [ ] Run validation check (lint/typecheck).
+- [ ] Mark all tasks completed after verification.

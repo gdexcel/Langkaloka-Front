@@ -17,7 +17,7 @@ import {
   Menu,
   X,
   Search,
-  MessageSquareText,
+  ClipboardList,
 } from 'lucide-react';
 
 type NavItem = {
@@ -105,6 +105,7 @@ export function Header() {
       const myId = localStorage.getItem('userId');
       if (!myId) return;
 
+      const normalizedMyId = String(myId);
       const senderId = String(data.senderId ?? '');
       const buyerId = String(data.buyerId ?? '');
       const sellerId = String(data.sellerId ?? '');
@@ -112,9 +113,10 @@ export function Header() {
       const text = String(data.text ?? '');
 
       if (!chatId || !text) return;
-      if (senderId === myId) return;
+      if (senderId === normalizedMyId) return;
 
-      const isParticipant = buyerId === myId || sellerId === myId;
+      const isParticipant =
+        buyerId === normalizedMyId || sellerId === normalizedMyId;
       if (!isParticipant) return;
 
       const currentChatId = window.location.pathname.split('/chat/')[1];
@@ -149,6 +151,12 @@ export function Header() {
     }
   }, [pathname]);
 
+  useEffect(() => {
+    if (pathname.startsWith('/chat')) {
+      setNotif(0);
+    }
+  }, [pathname]);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
@@ -166,6 +174,7 @@ export function Header() {
   };
 
   const userInitial = (user?.name || user?.email)?.[0]?.toUpperCase() || 'U';
+  const userName = user?.name || user?.email?.split('@')[0] || '';
 
   const navItems: NavItem[] = [
     { label: 'Wishlist', path: '/wishlist', icon: Heart },
@@ -177,8 +186,7 @@ export function Header() {
       onClick: () => setNotif(0),
       badge: notif,
     },
-    { label: 'Jualan', path: '/store-panel', icon: Store, startsWith: true },
-    { label: 'Feedback', path: '/feedback', icon: MessageSquareText },
+    { label: 'Feedback', path: '/feedback', icon: ClipboardList },
   ];
 
   const isActive = (item: NavItem) =>
@@ -186,13 +194,15 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm">
-        <div className="mx-auto grid h-20 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 md:px-6">
+      {/* ─── DESKTOP HEADER ─── */}
+      <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm shadow-sm">
+        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 md:px-6">
+          {/* LEFT — Logo */}
           <button
             onClick={() => router.push('/')}
-            className="group flex shrink-0 items-center gap-2.5 cursor-pointer"
+            className="group flex shrink-0 items-center gap-2 cursor-pointer"
           >
-            <div className="relative h-10 w-10 overflow-hidden rounded-xl ring-2 ring-blue-100 transition-all duration-200 group-hover:ring-blue-300">
+            <div className="relative h-8 w-8 overflow-hidden rounded-lg ring-2 ring-blue-100 transition-all group-hover:ring-blue-300">
               <Image
                 src="/langkaloka-logo.png"
                 alt="LangkaLoka"
@@ -201,174 +211,220 @@ export function Header() {
                 unoptimized
               />
             </div>
-            <span className="hidden text-2xl font-bold tracking-tight text-gray-900 sm:block">
+            <span className="hidden text-lg font-bold tracking-tight text-gray-900 sm:block">
               LangkaLoka
             </span>
           </button>
 
+          {/* CENTER — Search bar */}
           <form
             onSubmit={handleSearch}
-            className="hidden w-full max-w-xl justify-self-center md:flex"
+            className="hidden flex-1 md:flex justify-center px-4"
           >
-            <div className="relative w-full">
+            <div className="relative w-full max-w-lg">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari barang preloved..."
-                className="h-11 w-full rounded-full border border-gray-200 bg-gray-50 pl-10 pr-24 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                className="h-10 w-full rounded-full border border-gray-200 bg-gray-50 pl-10 pr-20 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
               />
               <button
                 type="submit"
-                className="absolute right-1.5 top-1.5 h-8 rounded-full bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 cursor-pointer"
+                className="absolute right-1 top-1 h-8 rounded-full bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 cursor-pointer"
               >
                 Cari
               </button>
             </div>
           </form>
 
-          <div className="ml-auto flex items-center gap-2">
+          {/* RIGHT — Actions */}
+          <div className="ml-auto flex items-center gap-2 md:ml-0">
             {isLoading ? (
-              <div className="h-10 w-28 animate-pulse rounded-full bg-gray-100" />
+              <div className="h-9 w-48 animate-pulse rounded-full bg-gray-100" />
             ) : user ? (
-              <>
-                <div className="hidden items-center gap-1 rounded-full bg-white p-1 md:flex">
-                  {navItems.map((item) => {
-                    const Icon = item.icon;
-                    const active = isActive(item);
+              <div className="hidden md:flex items-center gap-1.5">
+                {/* Ayo Jualan CTA */}
+                <button
+                  onClick={() => router.push('/store-panel')}
+                  className="flex h-9 items-center gap-1.5 rounded-full bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-95 cursor-pointer"
+                >
+                  <span>Ayo Jualan</span>
+                </button>
 
-                    return (
-                      <button
-                        key={`top-${item.label}`}
-                        onClick={() => {
-                          item.onClick?.();
-                          router.push(item.path);
-                        }}
-                        className={`relative flex h-10 w-10 items-center justify-center rounded-full transition cursor-pointer ${
-                          active
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                        }`}
-                        title={item.label}
-                      >
-                        <Icon className="h-6 w-6" />
-                        {item.badge && item.badge > 0 && (
-                          <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                            {item.badge > 9 ? '9+' : item.badge}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                {/* Thin divider */}
+                <div className="mx-1 h-5 w-px bg-gray-200" />
 
+                {/* Nav icon buttons */}
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item);
+                  return (
+                    <button
+                      key={`top-${item.label}`}
+                      onClick={() => {
+                        item.onClick?.();
+                        router.push(item.path);
+                      }}
+                      className={`relative flex h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
+                        active
+                          ? 'bg-blue-50 text-blue-600'
+                          : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+                      }`}
+                      title={item.label}
+                    >
+                      <Icon className="h-5 w-5" />
+                      {item.badge && item.badge > 0 && (
+                        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white leading-none">
+                          {item.badge > 9 ? '9+' : item.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+
+                {/* Thin divider */}
+                <div className="mx-1 h-5 w-px bg-gray-200" />
+
+                {/* Profile button */}
                 <button
                   onClick={() => router.push('/account')}
-                  className="flex items-center gap-2.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-150 hover:border-blue-300 hover:bg-blue-50 cursor-pointer"
+                  className="flex items-center gap-2 rounded-full border border-gray-200 bg-white pl-1 pr-3 py-1 text-sm transition hover:border-blue-200 hover:bg-blue-50 cursor-pointer"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-[13px] font-bold text-white">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-[12px] font-bold text-white">
                     {userInitial}
                   </div>
-                  <span className="hidden max-w-[100px] truncate text-[13px] lg:block">
-                    {user.name || user.email?.split('@')[0]}
+                  <span className="hidden max-w-[100px] truncate text-[13px] font-medium text-gray-700 lg:block">
+                    {userName}
                   </span>
                 </button>
 
+                {/* Logout */}
                 <button
                   onClick={handleLogout}
-                  className="hidden h-8 w-8 items-center justify-center rounded-full text-gray-500 transition hover:bg-red-50 hover:text-red-500 md:flex cursor-pointer"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition hover:bg-red-50 hover:text-red-500 cursor-pointer"
                   title="Keluar"
                 >
                   <LogOut className="h-4 w-4" />
                 </button>
-              </>
+              </div>
             ) : (
-              <button
-                onClick={() => {
-                  setIsLogin(true);
-                  setOpen(true);
-                }}
-                className="h-9 rounded-full bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700 cursor-pointer"
-              >
-                Login
-              </button>
+              <div className="hidden md:flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setIsLogin(true);
+                    setOpen(true);
+                  }}
+                  className="h-9 rounded-full border border-gray-200 px-4 text-[13px] font-semibold text-gray-700 transition hover:bg-gray-50 cursor-pointer"
+                >
+                  Masuk
+                </button>
+                <button
+                  onClick={() => {
+                    setIsLogin(false);
+                    setOpen(true);
+                  }}
+                  className="h-9 rounded-full bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700 cursor-pointer"
+                >
+                  Daftar
+                </button>
+              </div>
             )}
 
+            {/* Mobile hamburger */}
             <button
-              className="flex h-8 w-8 items-center justify-center rounded-full transition hover:bg-gray-100 md:hidden cursor-pointer"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-gray-100 md:hidden cursor-pointer"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
             >
               {mobileMenuOpen ? (
-                <X className="h-4 w-4 text-gray-600" />
+                <X className="h-5 w-5 text-gray-600" />
               ) : (
-                <Menu className="h-4 w-4 text-gray-600" />
+                <Menu className="h-5 w-5 text-gray-600" />
               )}
             </button>
           </div>
         </div>
       </header>
 
+      {/* ─── MOBILE DRAWER BACKDROP ─── */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/20 md:hidden"
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] md:hidden"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
+      {/* ─── MOBILE DRAWER ─── */}
       <div
-        className={`fixed right-0 top-0 z-50 h-dvh w-72 border-l border-gray-100 bg-white shadow-2xl transition-transform duration-200 md:hidden ${
+        className={`fixed right-0 top-0 z-50 h-dvh w-80 bg-white shadow-2xl transition-transform duration-300 ease-out md:hidden ${
           mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
+        {/* Drawer header */}
         <div className="flex h-14 items-center justify-between border-b border-gray-100 px-4">
-          <span className="text-[13px] font-semibold text-gray-800">Menu</span>
+          <div className="flex items-center gap-2">
+            <div className="relative h-7 w-7 overflow-hidden rounded-lg">
+              <Image
+                src="/langkaloka-logo.png"
+                alt="LangkaLoka"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+            <span className="text-sm font-bold text-gray-900">LangkaLoka</span>
+          </div>
           <button
-            className="rounded-full p-1.5 hover:bg-gray-100 cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100 cursor-pointer"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <X className="h-4 w-4 text-gray-600" />
+            <X className="h-4 w-4 text-gray-500" />
           </button>
         </div>
 
-        <div className="flex h-[calc(100%-3.5rem)] flex-col">
-          <form onSubmit={handleSearch} className="border-b border-gray-50 p-4">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari barang..."
-                className="h-9 w-full rounded-full border border-gray-200 bg-gray-50 pl-9 pr-3 text-sm outline-none focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
-          </form>
+        <div className="flex h-[calc(100%-3.5rem)] flex-col overflow-y-auto">
+          {/* Search */}
+          <div className="border-b border-gray-100 p-4">
+            <form onSubmit={handleSearch}>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari barang preloved..."
+                  className="h-10 w-full rounded-full border border-gray-200 bg-gray-50 pl-9 pr-4 text-sm outline-none focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+            </form>
+          </div>
 
-          <div className="flex-1 overflow-y-auto p-3">
+          <div className="flex-1 p-4 space-y-1">
             {isLoading ? (
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="h-10 animate-pulse rounded-xl bg-gray-100"
+                    className="h-12 animate-pulse rounded-2xl bg-gray-100"
                   />
                 ))}
               </div>
             ) : user ? (
               <>
+                {/* Profile card */}
                 <button
                   onClick={() => {
                     router.push('/account');
                     setMobileMenuOpen(false);
                   }}
-                  className="mb-3 flex w-full items-center gap-3 rounded-xl border border-blue-100 bg-blue-50 p-3 transition hover:bg-blue-100 cursor-pointer"
+                  className="flex w-full items-center gap-3 rounded-2xl bg-blue-50 border border-blue-100 p-3 mb-4 transition hover:bg-blue-100 cursor-pointer"
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
                     {userInitial}
                   </div>
                   <div className="min-w-0 text-left">
                     <p className="truncate text-[13px] font-semibold text-gray-900">
-                      {user.name || user.email?.split('@')[0]}
+                      {userName}
                     </p>
                     <p className="truncate text-[11px] text-gray-400">
                       {user.email}
@@ -376,10 +432,36 @@ export function Header() {
                   </div>
                 </button>
 
+                {/* Ayo Jualan — full width CTA */}
+                <button
+                  onClick={() => {
+                    router.push('/store-panel');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-2xl bg-blue-600 px-4 py-3 mb-4 transition hover:bg-blue-700 active:scale-[0.98] cursor-pointer"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
+                    <Store className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[13px] font-bold text-white">
+                      Ayo Jualan
+                    </p>
+                    <p className="text-[11px] text-blue-200">
+                      Buka toko sekarang
+                    </p>
+                  </div>
+                </button>
+
+                {/* Divider label */}
+                <p className="px-1 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                  Menu
+                </p>
+
+                {/* Nav items */}
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item);
-
                   return (
                     <button
                       key={`m-${item.label}`}
@@ -388,16 +470,22 @@ export function Header() {
                         router.push(item.path);
                         setMobileMenuOpen(false);
                       }}
-                      className={`mb-0.5 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition cursor-pointer ${
                         active
                           ? 'bg-blue-50 text-blue-600'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >
-                      <Icon className="h-4 w-4" />
-                      {item.label}
+                      <div
+                        className={`flex h-8 w-8 items-center justify-center rounded-xl ${
+                          active ? 'bg-blue-100' : 'bg-gray-100'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <span>{item.label}</span>
                       {item.badge && item.badge > 0 && (
-                        <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                        <span className="ml-auto rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">
                           {item.badge > 99 ? '99+' : item.badge}
                         </span>
                       )}
@@ -406,8 +494,8 @@ export function Header() {
                 })}
               </>
             ) : (
-              <div className="space-y-3 p-2">
-                <p className="text-[13px] text-gray-500">
+              <div className="space-y-3 pt-2">
+                <p className="text-[13px] text-gray-500 px-1">
                   Masuk untuk mulai belanja dan jualan.
                 </p>
                 <button
@@ -416,7 +504,7 @@ export function Header() {
                     setOpen(true);
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full rounded-xl bg-blue-600 py-2.5 text-[13px] font-semibold text-white transition hover:bg-blue-700 cursor-pointer"
+                  className="w-full rounded-xl bg-blue-600 py-3 text-[13px] font-semibold text-white transition hover:bg-blue-700 cursor-pointer"
                 >
                   Masuk
                 </button>
@@ -426,7 +514,7 @@ export function Header() {
                     setOpen(true);
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full rounded-xl border border-gray-200 py-2.5 text-[13px] font-semibold text-gray-700 transition hover:bg-gray-50 cursor-pointer"
+                  className="w-full rounded-xl border border-gray-200 py-3 text-[13px] font-semibold text-gray-700 transition hover:bg-gray-50 cursor-pointer"
                 >
                   Daftar
                 </button>
@@ -434,8 +522,9 @@ export function Header() {
             )}
           </div>
 
+          {/* Logout footer */}
           {user && !isLoading && (
-            <div className="border-t border-gray-100 p-3">
+            <div className="border-t border-gray-100 p-4">
               <button
                 onClick={handleLogout}
                 className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-medium text-red-500 transition hover:bg-red-50 cursor-pointer"
@@ -448,6 +537,7 @@ export function Header() {
         </div>
       </div>
 
+      {/* ─── AUTH DIALOG ─── */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
