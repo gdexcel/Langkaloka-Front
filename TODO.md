@@ -1,7 +1,7 @@
-# TODO - Fix Chat Notification Badge & Sound
+# TODO - Homepage Banner CTA Actions
 
-- [x] Update backend pusher payload in `app/api/chat/[id]/route.ts` to include `buyerId` and `sellerId`.
-- [x] Harden ID comparison in `components/views/Header.tsx` using string normalization.
-- [x] Add route-based badge reset when entering `/chat` in `components/views/Header.tsx`.
-- [ ] Run validation check (lint/typecheck).
-- [ ] Mark all tasks completed after verification.
+- [x] Update `app/page.tsx` banner CTA to support per-slide click actions.
+- [x] Implement CTA action: "Jelajahi Sekarang" scrolls to `Produk Terbaru` section on homepage.
+- [x] Implement CTA action: "Buka Toko Sekarang" navigates to `/store-panel/settings`.
+- [x] Verify no backend changes are made.
+- [x] Mark all tasks completed after verification.
