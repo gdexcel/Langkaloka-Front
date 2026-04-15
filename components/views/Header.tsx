@@ -248,7 +248,7 @@ export function Header() {
                 {/* Ayo Jualan CTA */}
                 <button
                   onClick={() => router.push('/store-panel')}
-                  className="flex h-9 items-center gap-1.5 rounded-full bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-95 cursor-pointer"
+                  className="flex h-9 items-center gap-1.5 rounded-full bg-gray-800 px-4 text-sm font-semibold text-white transition hover:bg-gray-900 active:scale-95 cursor-pointer"
                 >
                   <span>Ayo Jualan</span>
                 </button>

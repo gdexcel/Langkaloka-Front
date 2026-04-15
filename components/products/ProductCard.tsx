@@ -1,55 +1,56 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import axios from "axios"
+import Link from 'next/link';
+import axios from 'axios';
 
 type Product = {
-  id: string
-  name: string
-  description: string
-  price: number
-  condition?: string
-  image?: string
-}
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  condition?: string;
+  image?: string;
+  category?: string | { name?: string } | null;
+};
 
 export default function ProductCard({ product }: { product: Product }) {
   const toggleFavorite = async (e: React.MouseEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const token = localStorage.getItem("token")
+    const token = localStorage.getItem('token');
 
     if (!token) {
-      alert("Login dulu")
-      return
+      alert('Login dulu');
+      return;
     }
 
     try {
       await axios.post(
-        "/api/favorites",
+        '/api/favorites',
         { productId: product.id },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
-      )
+        },
+      );
 
-      alert("Added ❤️")
+      alert('Added ❤️');
     } catch (error: any) {
       // kalau sudah ada → kita remove
-      if (error?.response?.data?.message === "Already in favorites") {
+      if (error?.response?.data?.message === 'Already in favorites') {
         await axios.delete(`/api/favorites/${product.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
+        });
 
-        alert("Removed ❌")
+        alert('Removed ❌');
       } else {
-        console.error(error)
+        console.error(error);
       }
     }
-  }
+  };
   return (
     <Link href={`/product/${product.id}`}>
       <div
@@ -115,18 +116,25 @@ export default function ProductCard({ product }: { product: Product }) {
           <h2 className="text-sm font-medium line-clamp-1">{product.name}</h2>
 
           <p className="text-base font-bold">
-            {new Intl.NumberFormat("id-ID", {
-              style: "currency",
-              currency: "IDR",
+            {new Intl.NumberFormat('id-ID', {
+              style: 'currency',
+              currency: 'IDR',
               minimumFractionDigits: 0,
             }).format(product.price)}
           </p>
 
-          {product.condition && (
-            <p className="text-xs text-gray-500">{product.condition}</p>
+          {/* Kategori */}
+          {typeof product.category === 'string' && product.category && (
+            <span className="text-xs text-gray-500">{product.category}</span>
+          )}
+
+          {typeof product.category === 'object' && product.category?.name && (
+            <span className="text-xs text-gray-500">
+              {product.category.name}
+            </span>
           )}
         </div>
       </div>
     </Link>
-  )
+  );
 }

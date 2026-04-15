@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/client";
-import { products, productImages } from "@/db/schema";
-import { eq, ilike, or, and } from "drizzle-orm";
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db/client';
+import { products, productImages, categories } from '@/db/schema';
+import { eq, ilike, or, and } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const q = searchParams.get("q") || "";
+    const q = searchParams.get('q') || '';
 
     let allProducts;
 
@@ -20,9 +20,11 @@ export async function GET(req: NextRequest) {
           price: products.price,
           condition: products.condition,
           image: productImages.url,
+          category: categories.name,
         })
         .from(products)
         .leftJoin(productImages, eq(products.id, productImages.productId))
+        .leftJoin(categories, eq(products.categoryId, categories.id))
         .where(
           and(
             eq(products.isSold, false),
@@ -42,9 +44,11 @@ export async function GET(req: NextRequest) {
           price: products.price,
           condition: products.condition,
           image: productImages.url,
+          category: categories.name,
         })
         .from(products)
         .leftJoin(productImages, eq(products.id, productImages.productId))
+        .leftJoin(categories, eq(products.categoryId, categories.id))
         .where(eq(products.isSold, false));
     }
 
@@ -53,7 +57,7 @@ export async function GET(req: NextRequest) {
     console.error(error);
 
     return NextResponse.json(
-      { error: "Failed to fetch products" },
+      { error: 'Failed to fetch products' },
       { status: 500 },
     );
   }
