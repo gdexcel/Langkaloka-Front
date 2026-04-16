@@ -1,24 +1,20 @@
-import { useQuery } from "@tanstack/react-query"
-import axios from "axios"
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 
 export const useFavorites = () => {
-
   return useQuery({
-    queryKey: ["favorites"],
+    queryKey: ['favorites'],
 
     queryFn: async () => {
+      const token = localStorage.getItem('token');
 
-      const token = localStorage.getItem("token")
-
-      const { data } = await axios.get("/api/favorites", {
+      const { data } = await axios.get('/api/favorites', {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      return data
-    }
-
-  })
-
-}
+      return data;
+    },
+  });
+};

@@ -3,7 +3,8 @@
 import { Header } from '@/components/views/Header';
 import { useProducts } from '@/hooks/useProducts';
 import ProductCard from '@/components/products/ProductCard';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Tag, Zap } from 'lucide-react';
 
@@ -226,9 +227,40 @@ function Pagination({
 export default function Home() {
   const { data: products, isLoading } = useProducts();
   const [page, setPage] = useState(1);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
 
   const totalPages = Math.ceil((products?.length || 0) / PAGE_SIZE);
   const paginated = products?.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => {
+    const loadFavorites = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setFavoriteIds(new Set());
+        return;
+      }
+
+      try {
+        const res = await axios.get('/api/favorites', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const ids = new Set<string>(
+          (res.data || []).map((fav: any) => String(fav.productId)),
+        );
+        setFavoriteIds(ids);
+      } catch (error) {
+        console.error(error);
+        setFavoriteIds(new Set());
+      }
+    };
+
+    loadFavorites();
+  }, []);
+
+  const favoriteMap = useMemo(() => favoriteIds, [favoriteIds]);
 
   const handlePageChange = (p: number) => {
     setPage(p);
@@ -236,28 +268,31 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100">
       <Header />
 
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-8">
         {/* ── Banner Slider ── */}
         <BannerSlider />
 
         {/* ── Katalog Produk ── */}
-        <section id="produk-terbaru">
+        <section
+          id="produk-terbaru"
+          className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5"
+        >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">
+              <h2 className="text-lg font-bold text-slate-900">
                 Produk Terbaru
               </h2>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 {isLoading
                   ? 'Memuat...'
                   : `${products?.length || 0} barang tersedia`}
               </p>
             </div>
             {!isLoading && totalPages > 1 && (
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-slate-500">
                 Hal {page} dari {totalPages}
               </span>
             )}
@@ -290,7 +325,11 @@ export default function Home() {
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {paginated.map((product: any) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    initialIsFavorite={favoriteMap.has(String(product.id))}
+                  />
                 ))}
               </div>
 

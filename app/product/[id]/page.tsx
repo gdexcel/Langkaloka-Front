@@ -1,23 +1,76 @@
 'use client';
 
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useParams, useRouter } from 'next/navigation';
 import { useProduct } from '@/hooks/useProduct';
 import { Header } from '@/components/views/Header';
 import Link from 'next/link';
 import axios from 'axios';
-import { MapPin, Store, Tag } from 'lucide-react';
+import { MapPin, Store, Tag, Heart, Loader2 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+
+type Product = {
+  id: string;
+  name: string;
+  price: number;
+  image?: string;
+  category?: string;
+  condition?: string;
+  storeId: string;
+  storeName?: string;
+  storeLocation?: string;
+  storeOwnerId: string;
+  description?: string;
+  isSold: boolean;
+};
 
 export default function ProductDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: product, isLoading } = useProduct(id);
+  const { data: product, isLoading: productLoading } = useProduct(id);
   const { data: user } = useCurrentUser();
+  const { data: favorites = [] } = useFavorites();
   const isOwner = user && product ? user.id === product.storeOwnerId : false;
+  const token = localStorage.getItem('token');
+  const isAuthenticated = !!token;
 
-  if (isLoading) {
+  const isFavorite =
+    product && favorites.some((fav: any) => fav.productId === product.id);
+
+  const toggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    if (!isAuthenticated || isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    const url = isFavorite ? `/api/favorites/${id}` : '/api/favorites';
+    const method = isFavorite ? 'DELETE' : 'POST';
+
+    try {
+      await axios({
+        method,
+        url,
+        data: !isFavorite ? { productId: id } : undefined,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+    } catch (error) {
+      console.error('Toggle favorite error', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (productLoading) {
     return (
       <main className="min-h-screen bg-gray-50">
         <Header />
@@ -71,6 +124,7 @@ export default function ProductDetailPage() {
       console.error(error);
     }
   };
+
   const handleChat = async () => {
     const token = localStorage.getItem('token');
 
@@ -92,7 +146,6 @@ export default function ProductDetailPage() {
 
       const chatId = res.data.id;
 
-      // 🔥 redirect ke halaman chat
       router.push(`/chat/${chatId}`);
     } catch (error) {
       console.error(error);
@@ -123,6 +176,25 @@ export default function ProductDetailPage() {
                   SOLD
                 </div>
               )}
+
+              <button
+                onClick={toggleFavorite}
+                disabled={!isAuthenticated || isSubmitting}
+                title={
+                  !isAuthenticated
+                    ? 'Login untuk menambahkan ke wishlist'
+                    : 'Toggle wishlist'
+                }
+                className="absolute right-3 top-3 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg border backdrop-blur-sm hover:bg-white hover:scale-105 transition-all text-gray-600 hover:text-rose-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Heart
+                    className={`h-5 w-5 ${isFavorite ? 'fill-rose-500 text-rose-500' : ''}`}
+                  />
+                )}
+              </button>
             </div>
           </section>
 
