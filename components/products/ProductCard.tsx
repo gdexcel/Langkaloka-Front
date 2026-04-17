@@ -1,10 +1,11 @@
-'use client';
+//langkaloka-v1\components\products\ProductCard.tsx
+"use client";
 
-import Link from 'next/link';
-import axios from 'axios';
-import { Heart, Loader2 } from 'lucide-react';
-import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import Link from "next/link";
+import axios from "axios";
+import { Heart, Loader2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 type Product = {
   id: string;
@@ -26,14 +27,14 @@ export default function ProductCard({
   const queryClient = useQueryClient();
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState('');
+  const [feedback, setFeedback] = useState("");
 
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const isAuthenticated = !!token;
   const categoryName =
-    typeof product.category === 'string'
+    typeof product.category === "string"
       ? product.category
-      : product.category?.name || '';
+      : product.category?.name || "";
 
   const toggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -42,10 +43,10 @@ export default function ProductCard({
     if (!isAuthenticated || isSubmitting) return;
 
     setIsSubmitting(true);
-    setFeedback('');
+    setFeedback("");
 
-    const url = isFavorite ? `/api/favorites/${product.id}` : '/api/favorites';
-    const method = isFavorite ? 'DELETE' : 'POST';
+    const url = isFavorite ? `/api/favorites/${product.id}` : "/api/favorites";
+    const method = isFavorite ? "DELETE" : "POST";
 
     try {
       await axios({
@@ -59,17 +60,17 @@ export default function ProductCard({
 
       setIsFavorite(!isFavorite);
       setFeedback(
-        isFavorite ? 'Dihapus dari wishlist' : 'Ditambahkan ke wishlist',
+        isFavorite ? "Dihapus dari wishlist" : "Ditambahkan ke wishlist",
       );
 
       // Invalidate to sync wishlist/home
-      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      queryClient.invalidateQueries({ queryKey: ["favorites"] });
     } catch (error: any) {
-      console.error('Wishlist error:', error);
-      setFeedback('Gagal memperbarui wishlist');
+      console.error("Wishlist error:", error);
+      setFeedback("Gagal memperbarui wishlist");
     } finally {
       setIsSubmitting(false);
-      setTimeout(() => setFeedback(''), 2000);
+      setTimeout(() => setFeedback(""), 2000);
     }
   };
 
@@ -80,8 +81,8 @@ export default function ProductCard({
         disabled={!isAuthenticated || isSubmitting}
         title={
           !isAuthenticated
-            ? 'Login untuk menambahkan ke wishlist'
-            : 'Toggle wishlist'
+            ? "Login untuk menambahkan ke wishlist"
+            : "Toggle wishlist"
         }
         aria-label="toggle wishlist"
         className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/90 text-gray-500 shadow-sm backdrop-blur-sm transition hover:scale-105 hover:text-rose-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
@@ -90,13 +91,13 @@ export default function ProductCard({
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           <Heart
-            className={`h-4 w-4 transition-colors ${isFavorite ? 'fill-rose-500 text-rose-500' : ''}`}
+            className={`h-4 w-4 transition-colors ${isFavorite ? "fill-rose-500 text-rose-500" : ""}`}
           />
         )}
       </button>
 
       {product.image ? (
-        <div className="overflow-hidden bg-gray-100">
+        <div className="overflow-hidden bg-gray-100 rounded-sm">
           <img
             src={product.image}
             alt={product.name}
@@ -125,19 +126,19 @@ export default function ProductCard({
         )}
 
         <p className="mt-auto pt-2 text-base font-bold text-gray-900">
-          {new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
+          {new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
             minimumFractionDigits: 0,
           }).format(product.price)}
         </p>
 
         <p
-          className={`min-h-[16px] text-[11px] transition ${
-            feedback ? 'text-emerald-600' : 'text-transparent'
+          className={`min-h-4 text-[11px] transition ${
+            feedback ? "text-emerald-600" : "text-transparent"
           }`}
         >
-          {feedback || '.'}
+          {feedback || "."}
         </p>
       </div>
     </Link>

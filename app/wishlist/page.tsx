@@ -1,14 +1,15 @@
-'use client';
+//langkaloka-v1\app\wishlist\page.tsx
+"use client";
 
-import { Header } from '@/components/views/Header';
-import { useFavorites } from '@/hooks/useFavorites';
-import axios from 'axios';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Heart, Loader2, Trash2, AlertCircle } from 'lucide-react';
-import { useState, useTransition } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { Header } from "@/components/views/Header";
+import { useFavorites } from "@/hooks/useFavorites";
+import axios from "axios";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Heart, Loader2, Trash2, AlertCircle } from "lucide-react";
+import { useState, useTransition } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Favorite = {
   favoriteId: string;
@@ -24,16 +25,16 @@ export default function WishlistPage() {
   const [isPending, startTransition] = useTransition();
 
   const { data: favorites, isLoading, error } = useFavorites();
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
 
   // Auth guard
   if (!token) {
-    router.replace('/');
+    router.replace("/");
     return null;
   }
 
   const removeFavorite = (productId: string) => {
-    if (!confirm('Hapus dari wishlist?')) return;
+    if (!confirm("Hapus dari wishlist?")) return;
 
     startTransition(async () => {
       try {
@@ -42,10 +43,10 @@ export default function WishlistPage() {
             Authorization: `Bearer ${token}`,
           },
         });
-        queryClient.invalidateQueries({ queryKey: ['favorites'] });
+        queryClient.invalidateQueries({ queryKey: ["favorites"] });
       } catch (err) {
-        console.error('Remove failed', err);
-        alert('Gagal menghapus dari wishlist');
+        console.error("Remove failed", err);
+        alert("Gagal menghapus dari wishlist");
       }
     });
   };
@@ -54,7 +55,7 @@ export default function WishlistPage() {
     return (
       <main className="min-h-screen">
         <Header />
-        <div className="max-w-6xl mx-auto p-6 flex items-center justify-center min-h-[400px]">
+        <div className="max-w-6xl mx-auto p-6 flex items-center justify-center min-h-100">
           <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
         </div>
       </main>
@@ -159,7 +160,7 @@ export default function WishlistPage() {
                       {fav.name}
                     </h3>
                     <p className="text-lg font-bold text-gray-900">
-                      Rp {fav.price?.toLocaleString('id-ID')}
+                      Rp {fav.price?.toLocaleString("id-ID")}
                     </p>
                   </div>
                 </div>

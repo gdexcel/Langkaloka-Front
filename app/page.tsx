@@ -1,38 +1,38 @@
-'use client';
+"use client";
 
-import { Header } from '@/components/views/Header';
-import { useProducts } from '@/hooks/useProducts';
-import ProductCard from '@/components/products/ProductCard';
-import { useState, useEffect, useRef, useMemo } from 'react';
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Tag, Zap } from 'lucide-react';
+import { Header } from "@/components/views/Header";
+import { useProducts } from "@/hooks/useProducts";
+import ProductCard from "@/components/products/ProductCard";
+import { useState, useEffect, useRef, useMemo } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight, Tag, Zap } from "lucide-react";
 
 // ─── Banner Slider ───────────────────────────────────────────
 const banners = [
   {
     id: 1,
-    tag: 'Penawaran Spesial',
-    title: 'Barang Preloved\nBerkualitas Tinggi',
+    tag: "Penawaran Spesial",
+    title: "Barang Preloved\nBerkualitas Tinggi",
     subtitle:
-      'Temukan ribuan barang branded second dengan harga terbaik. Chat langsung, deal cepat!',
-    cta: 'Jelajahi Sekarang',
-    bg: 'from-blue-600 via-blue-500 to-indigo-600',
-    accent: 'bg-blue-400/20',
-    emoji: '🛍️',
-    pattern: 'circles',
+      "Temukan ribuan barang branded second dengan harga terbaik. Chat langsung, deal cepat!",
+    cta: "Jelajahi Sekarang",
+    bg: "from-blue-600 via-blue-500 to-indigo-600",
+    accent: "bg-blue-400/20",
+    emoji: "🛍️",
+    pattern: "circles",
   },
   {
     id: 2,
-    tag: 'Gratis Ongkir',
-    title: 'Mulai Jualan\nHari Ini, Gratis!',
+    tag: "Gratis Ongkir",
+    title: "Mulai Jualan\nHari Ini, Gratis!",
     subtitle:
-      'Toko gratis, listing unlimited. Ribuan pembeli siap menemukan barang kamu.',
-    cta: 'Buka Toko Sekarang',
-    bg: 'from-emerald-500 via-teal-500 to-cyan-600',
-    accent: 'bg-emerald-400/20',
-    emoji: '🚀',
-    pattern: 'dots',
+      "Toko gratis, listing unlimited. Ribuan pembeli siap menemukan barang kamu.",
+    cta: "Buka Toko Sekarang",
+    bg: "from-emerald-500 via-teal-500 to-cyan-600",
+    accent: "bg-emerald-400/20",
+    emoji: "🚀",
+    pattern: "dots",
   },
 ];
 
@@ -64,25 +64,25 @@ function BannerSlider() {
   const b = banners[current];
 
   const handleCtaClick = () => {
-    if (b.cta === 'Jelajahi Sekarang') {
-      const productSection = document.getElementById('produk-terbaru');
-      productSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (b.cta === "Jelajahi Sekarang") {
+      const productSection = document.getElementById("produk-terbaru");
+      productSection?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
 
-    if (b.cta === 'Buka Toko Sekarang') {
-      router.push('/store-panel/settings');
+    if (b.cta === "Buka Toko Sekarang") {
+      router.push("/store-panel/settings");
     }
   };
 
   return (
     <div className="relative w-full overflow-hidden rounded-2xl shadow-lg select-none">
       <div
-        className={`bg-gradient-to-r ${b.bg} transition-opacity duration-200 ${animating ? 'opacity-0' : 'opacity-100'}`}
+        className={`bg-linear-to-r ${b.bg} transition-opacity duration-200 ${animating ? "opacity-0" : "opacity-100"}`}
       >
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden">
-          {b.pattern === 'circles' ? (
+          {b.pattern === "circles" ? (
             <>
               <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5" />
               <div className="absolute -right-8 -bottom-20 h-80 w-80 rounded-full bg-white/5" />
@@ -94,15 +94,15 @@ function BannerSlider() {
                 className="absolute inset-0"
                 style={{
                   backgroundImage:
-                    'radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)',
-                  backgroundSize: '28px 28px',
+                    "radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)",
+                  backgroundSize: "28px 28px",
                 }}
               />
             </>
           )}
         </div>
 
-        <div className="relative flex flex-col md:flex-row items-center justify-between px-8 py-10 md:py-12 md:px-12 gap-6 min-h-[200px] md:min-h-[220px]">
+        <div className="relative flex flex-col md:flex-row items-center justify-between px-8 py-10 md:py-12 md:px-12 gap-6 min-h-50 md:min-h-55">
           {/* Text */}
           <div className="flex-1 text-white">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold mb-4 backdrop-blur-sm">
@@ -138,7 +138,7 @@ function BannerSlider() {
             key={i}
             onClick={() => goTo(i)}
             className={`rounded-full transition-all duration-300 cursor-pointer ${
-              i === current ? 'w-5 h-2 bg-white' : 'w-2 h-2 bg-white/50'
+              i === current ? "w-5 h-2 bg-white" : "w-2 h-2 bg-white/50"
             }`}
           />
         ))}
@@ -200,10 +200,10 @@ function Pagination({
             )}
             <button
               onClick={() => onChange(p)}
-              className={`h-8 min-w-[32px] rounded-lg px-2 text-sm font-medium transition cursor-pointer ${
+              className={`h-8 min-w-8 rounded-lg px-2 text-sm font-medium transition cursor-pointer ${
                 p === page
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-gray-600 hover:bg-gray-100"
               }`}
             >
               {p}
@@ -234,14 +234,14 @@ export default function Home() {
 
   useEffect(() => {
     const loadFavorites = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
         setFavoriteIds(new Set());
         return;
       }
 
       try {
-        const res = await axios.get('/api/favorites', {
+        const res = await axios.get("/api/favorites", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -264,11 +264,11 @@ export default function Home() {
 
   const handlePageChange = (p: number) => {
     setPage(p);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100">
+    <main className="min-h-screen bg-linear-to-b from-slate-50 via-white to-slate-100">
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-8">
@@ -287,7 +287,7 @@ export default function Home() {
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
                 {isLoading
-                  ? 'Memuat...'
+                  ? "Memuat..."
                   : `${products?.length || 0} barang tersedia`}
               </p>
             </div>

@@ -1,49 +1,50 @@
-"use client"
+//langkaloka-v1\app\store\[id]\page.tsx
+"use client";
 
-import { useParams } from "next/navigation"
-import { useStore } from "@/hooks/useStore"
-import { Header } from "@/components/views/Header"
-import ProductCard from "@/components/products/ProductCard"
-import { useState, useEffect } from "react"
+import { useParams } from "next/navigation";
+import { useStore } from "@/hooks/useStore";
+import { Header } from "@/components/views/Header";
+import ProductCard from "@/components/products/ProductCard";
+import { useState, useEffect } from "react";
 
 export default function StorePage() {
-  const params = useParams()
-  const id = params.id as string
+  const params = useParams();
+  const id = params.id as string;
 
-  const { data, isLoading, refetch } = useStore(id)
+  const { data, isLoading, refetch } = useStore(id);
 
-  const [selectedRating, setSelectedRating] = useState(0)
-  const [hasRated, setHasRated] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [hasRated, setHasRated] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // 🔥 LOAD RATING DARI DB (AUTO PERSIST)
   useEffect(() => {
     if (data?.userRating) {
-      setSelectedRating(Number(data.userRating))
-      setHasRated(true)
+      setSelectedRating(Number(data.userRating));
+      setHasRated(true);
     }
-  }, [data])
+  }, [data]);
 
-  if (isLoading) return <p>Loading...</p>
-  if (!data) return <p>Store not found</p>
+  if (isLoading) return <p>Loading...</p>;
+  if (!data) return <p>Store not found</p>;
 
   // 🔥 HANDLE RATE
   const handleRate = async (star: number) => {
     // 🔒 BLOCK kalau sudah rating
     if (hasRated) {
-      alert("Kamu sudah memberi rating ⭐")
-      return
+      alert("Kamu sudah memberi rating ⭐");
+      return;
     }
 
-    const token = localStorage.getItem("token")
+    const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Login dulu ya 🔐")
-      return
+      alert("Login dulu ya 🔐");
+      return;
     }
 
     try {
-      setLoading(true)
+      setLoading(true);
 
       const res = await fetch("/api/store/rate", {
         method: "POST",
@@ -55,30 +56,30 @@ export default function StorePage() {
           storeId: data.store.id,
           rating: star,
         }),
-      })
+      });
 
-      const result = await res.json()
+      const result = await res.json();
 
       if (!res.ok) {
-        alert(result.error)
-        return
+        alert(result.error);
+        return;
       }
 
       // 🔥 UPDATE UI + LOCK
-      setSelectedRating(star)
-      setHasRated(true)
+      setSelectedRating(star);
+      setHasRated(true);
 
       // 🔥 REFRESH AVG RATING
-      await refetch()
+      await refetch();
 
-      alert(`⭐ Terima kasih sudah memberi ${star} bintang!`)
+      alert(`⭐ Terima kasih sudah memberi ${star} bintang!`);
     } catch (error) {
-      console.error(error)
-      alert("Gagal rating")
+      console.error(error);
+      alert("Gagal rating");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <main className="min-h-screen">
@@ -167,5 +168,5 @@ export default function StorePage() {
         </div>
       </div>
     </main>
-  )
+  );
 }

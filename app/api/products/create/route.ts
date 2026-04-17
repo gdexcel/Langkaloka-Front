@@ -9,7 +9,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const { name, description, price, condition, image, categoryId } = body;
+    const { name, description, price, condition, images, categoryId } = body;
+    // ↑ ganti `image` → `images` (array)
 
     const authHeader = req.headers.get("authorization");
 
@@ -51,12 +52,14 @@ export async function POST(req: NextRequest) {
       })
       .returning();
 
-    // simpan image jika ada
-    if (image) {
-      await db.insert(productImages).values({
-        productId: product.id,
-        url: image,
-      });
+    // Insert semua images sekaligus (kalau ada)
+    if (images && images.length > 0) {
+      await db.insert(productImages).values(
+        images.map((url: string) => ({
+          productId: product.id,
+          url,
+        })),
+      );
     }
 
     return NextResponse.json(product);
