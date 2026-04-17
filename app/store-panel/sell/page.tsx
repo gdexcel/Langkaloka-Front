@@ -1,9 +1,10 @@
-'use client';
+//langkaloka-v1\app\store-panel\sell\page.tsx
+"use client";
 
-import { useState } from 'react';
-import axios from 'axios';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import axios from "axios";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 type Category = {
   id: string;
@@ -13,20 +14,20 @@ type Category = {
 export default function SellPage() {
   const router = useRouter();
 
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [description, setDescription] = useState('');
-  const [condition, setCondition] = useState('baik');
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [description, setDescription] = useState("");
+  const [condition, setCondition] = useState("baik");
   const [image, setImage] = useState<File | null>(null);
   const [hasStore, setHasStore] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [categoryId, setCategoryId] = useState('');
+  const [categoryId, setCategoryId] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
 
       let imageUrl = null;
 
@@ -39,7 +40,7 @@ export default function SellPage() {
           reader.onloadend = () => resolve(reader.result as string);
         });
 
-        const uploadRes = await axios.post('/api/upload', {
+        const uploadRes = await axios.post("/api/upload", {
           image: base64,
         });
 
@@ -47,7 +48,7 @@ export default function SellPage() {
       }
 
       await axios.post(
-        '/api/products/create',
+        "/api/products/create",
         {
           name,
           description,
@@ -63,9 +64,9 @@ export default function SellPage() {
         },
       );
 
-      alert('Product created!');
+      alert("Product created!");
 
-      router.push('/');
+      router.push("/");
     } catch (error) {
       console.error(error);
     }
@@ -73,18 +74,18 @@ export default function SellPage() {
 
   useEffect(() => {
     const checkStoreAndCategories = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
 
       if (!token) return;
 
       try {
         const [storeRes, categoriesRes] = await Promise.all([
-          axios.get('/api/stores/me', {
+          axios.get("/api/stores/me", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
-          axios.get('/api/categories'),
+          axios.get("/api/categories"),
         ]);
 
         if (!storeRes.data) {
@@ -109,7 +110,7 @@ export default function SellPage() {
         <h2 className="text-2xl font-bold">Kamu belum punya toko</h2>
         <p className="text-gray-500">Buat toko dulu untuk mulai berjualan</p>
         <button
-          onClick={() => router.push('/store-panel/settings')}
+          onClick={() => router.push("/store-panel/settings")}
           className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition"
         >
           Buat Toko Sekarang

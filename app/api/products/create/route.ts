@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db/client';
-import { products, stores, productImages } from '@/db/schema';
-import { verifyToken } from '@/lib/auth';
-import { eq } from 'drizzle-orm';
+//langkaloka-v1\app\api\products\create\route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db/client";
+import { products, stores, productImages } from "@/db/schema";
+import { verifyToken } from "@/lib/auth";
+import { eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,18 +11,18 @@ export async function POST(req: NextRequest) {
 
     const { name, description, price, condition, image, categoryId } = body;
 
-    const authHeader = req.headers.get('authorization');
+    const authHeader = req.headers.get("authorization");
 
     if (!authHeader) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.split(" ")[1];
 
     const decoded = verifyToken(token);
 
     if (!decoded) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // cari store milik user
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
       .limit(1);
 
     if (!store.length) {
-      return NextResponse.json({ error: 'User has no store' }, { status: 400 });
+      return NextResponse.json({ error: "User has no store" }, { status: 400 });
     }
 
     const storeId = store[0].id;
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
     console.error(error);
 
     return NextResponse.json(
-      { error: 'Failed to create product' },
+      { error: "Failed to create product" },
       { status: 500 },
     );
   }
