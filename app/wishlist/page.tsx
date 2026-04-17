@@ -98,7 +98,7 @@ export default function WishlistPage() {
         </h1>
 
         {!favorites || favorites.length === 0 ? (
-          <div className="bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-12 text-center">
+          <div className="bg-linear-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-12 text-center">
             <Heart className="h-24 w-24 text-rose-300 mx-auto mb-6" />
             <h2 className="text-2xl font-bold text-gray-900 mb-3">
               Wishlist kosong
@@ -109,7 +109,7 @@ export default function WishlistPage() {
             </p>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-8 py-3 rounded-xl font-semibold hover:from-rose-600 hover:to-pink-600 transition-all shadow-lg"
+              className="inline-flex items-center gap-2 bg-linear-to-r from-rose-500 to-pink-500 text-white px-8 py-3 rounded-xl font-semibold hover:from-rose-600 hover:to-pink-600 transition-all shadow-lg"
             >
               <Heart className="h-5 w-5" />
               Jelajahi Produk

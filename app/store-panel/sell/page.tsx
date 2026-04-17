@@ -312,7 +312,7 @@ export default function SellPage() {
 
             {/* DESKRIPSI */}
             <textarea
-              className="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-gray-400 min-h-[120px] resize-none"
+              className="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-gray-400 min-h-30 resize-none"
               placeholder="Deskripsi"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
