@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useEffect, useState, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import SignupPage from './Signup';
-import { LoginForm } from './fragments/LoginForm';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useQueryClient } from '@tanstack/react-query';
-import Pusher from 'pusher-js';
+import Image from "next/image";
+import { useEffect, useState, useRef } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import SignupPage from "./Signup";
+import { LoginForm } from "./fragments/LoginForm";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import Pusher from "pusher-js";
 import {
   Store,
   Heart,
@@ -18,7 +18,7 @@ import {
   X,
   Search,
   ClipboardList,
-} from 'lucide-react';
+} from "lucide-react";
 
 type NavItem = {
   label: string;
@@ -47,7 +47,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [notif, setNotif] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   const queryClient = useQueryClient();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -55,13 +55,13 @@ export function Header() {
   const prevPathnameRef = useRef(pathname);
 
   useEffect(() => {
-    if (pathname !== '/search') return;
-    const q = searchParams.get('q') || '';
+    if (pathname !== "/search") return;
+    const q = searchParams.get("q") || "";
     setSearchQuery((prev) => (prev === q ? prev : q));
   }, [pathname, searchParams]);
 
   useEffect(() => {
-    audioRef.current = new Audio('/notif.mp3');
+    audioRef.current = new Audio("/notif.mp3");
     audioRef.current.volume = 0.5;
   }, []);
 
@@ -71,18 +71,18 @@ export function Header() {
       audioRef.current.muted = true;
       audioRef.current.play().catch(() => {});
     };
-    document.addEventListener('click', unlock, { once: true });
-    return () => document.removeEventListener('click', unlock);
+    document.addEventListener("click", unlock, { once: true });
+    return () => document.removeEventListener("click", unlock);
   }, []);
 
   useEffect(() => {
     if (!user) return;
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return;
 
     const sendPing = () => {
-      fetch('/api/user/online', {
-        method: 'POST',
+      fetch("/api/user/online", {
+        method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
     };
@@ -99,18 +99,18 @@ export function Header() {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
     });
 
-    const channel = pusher.subscribe('chat-list');
+    const channel = pusher.subscribe("chat-list");
 
     const onChatListUpdate = (data: ChatListUpdateEvent) => {
-      const myId = localStorage.getItem('userId');
+      const myId = localStorage.getItem("userId");
       if (!myId) return;
 
       const normalizedMyId = String(myId);
-      const senderId = String(data.senderId ?? '');
-      const buyerId = String(data.buyerId ?? '');
-      const sellerId = String(data.sellerId ?? '');
-      const chatId = String(data.chatId ?? '');
-      const text = String(data.text ?? '');
+      const senderId = String(data.senderId ?? "");
+      const buyerId = String(data.buyerId ?? "");
+      const sellerId = String(data.sellerId ?? "");
+      const chatId = String(data.chatId ?? "");
+      const text = String(data.text ?? "");
 
       if (!chatId || !text) return;
       if (senderId === normalizedMyId) return;
@@ -119,7 +119,7 @@ export function Header() {
         buyerId === normalizedMyId || sellerId === normalizedMyId;
       if (!isParticipant) return;
 
-      const currentChatId = window.location.pathname.split('/chat/')[1];
+      const currentChatId = window.location.pathname.split("/chat/")[1];
       if (currentChatId === chatId) return;
 
       const eventKey = `${chatId}-${text}-${senderId}`;
@@ -135,11 +135,11 @@ export function Header() {
       }
     };
 
-    channel.bind('update', onChatListUpdate);
+    channel.bind("update", onChatListUpdate);
 
     return () => {
-      channel.unbind('update', onChatListUpdate);
-      pusher.unsubscribe('chat-list');
+      channel.unbind("update", onChatListUpdate);
+      pusher.unsubscribe("chat-list");
       pusher.disconnect();
     };
   }, [user]);
@@ -152,16 +152,16 @@ export function Header() {
   }, [pathname]);
 
   useEffect(() => {
-    if (pathname.startsWith('/chat')) {
+    if (pathname.startsWith("/chat")) {
       setNotif(0);
     }
   }, [pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    router.push('/');
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+    router.push("/");
     setMobileMenuOpen(false);
   };
 
@@ -173,20 +173,20 @@ export function Header() {
     setMobileMenuOpen(false);
   };
 
-  const userInitial = (user?.name || user?.email)?.[0]?.toUpperCase() || 'U';
-  const userName = user?.name || user?.email?.split('@')[0] || '';
+  const userInitial = (user?.name || user?.email)?.[0]?.toUpperCase() || "U";
+  const userName = user?.name || user?.email?.split("@")[0] || "";
 
   const navItems: NavItem[] = [
-    { label: 'Wishlist', path: '/wishlist', icon: Heart },
+    { label: "Wishlist", path: "/wishlist", icon: Heart },
     {
-      label: 'Chat',
-      path: '/chat',
+      label: "Chat",
+      path: "/chat",
       icon: MessageCircle,
       startsWith: true,
       onClick: () => setNotif(0),
       badge: notif,
     },
-    { label: 'Feedback', path: '/feedback', icon: ClipboardList },
+    { label: "Feedback", path: "/feedback", icon: ClipboardList },
   ];
 
   const isActive = (item: NavItem) =>
@@ -199,7 +199,7 @@ export function Header() {
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 md:px-6">
           {/* LEFT — Logo */}
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push("/")}
             className="group flex shrink-0 items-center gap-2 cursor-pointer"
           >
             <div className="relative h-8 w-8 overflow-hidden rounded-lg ring-2 ring-blue-100 transition-all group-hover:ring-blue-300">
@@ -247,7 +247,7 @@ export function Header() {
               <div className="hidden md:flex items-center gap-1.5">
                 {/* Ayo Jualan CTA */}
                 <button
-                  onClick={() => router.push('/store-panel')}
+                  onClick={() => router.push("/store-panel")}
                   className="flex h-9 items-center gap-1.5 rounded-full bg-gray-800 px-4 text-sm font-semibold text-white transition hover:bg-gray-900 active:scale-95 cursor-pointer"
                 >
                   <span>Ayo Jualan</span>
@@ -269,15 +269,15 @@ export function Header() {
                       }}
                       className={`relative flex h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
                         active
-                          ? 'bg-blue-50 text-blue-600'
-                          : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+                          ? "bg-blue-50 text-blue-600"
+                          : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
                       }`}
                       title={item.label}
                     >
                       <Icon className="h-5 w-5" />
                       {item.badge && item.badge > 0 && (
                         <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white leading-none">
-                          {item.badge > 9 ? '9+' : item.badge}
+                          {item.badge > 9 ? "9+" : item.badge}
                         </span>
                       )}
                     </button>
@@ -289,13 +289,13 @@ export function Header() {
 
                 {/* Profile button */}
                 <button
-                  onClick={() => router.push('/account')}
+                  onClick={() => router.push("/account")}
                   className="flex items-center gap-2 rounded-full border border-gray-200 bg-white pl-1 pr-3 py-1 text-sm transition hover:border-blue-200 hover:bg-blue-50 cursor-pointer"
                 >
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-[12px] font-bold text-white">
                     {userInitial}
                   </div>
-                  <span className="hidden max-w-[100px] truncate text-[13px] font-medium text-gray-700 lg:block">
+                  <span className="hidden max-w-25 truncate text-[13px] font-medium text-gray-700 lg:block">
                     {userName}
                   </span>
                 </button>
@@ -358,7 +358,7 @@ export function Header() {
       {/* ─── MOBILE DRAWER ─── */}
       <div
         className={`fixed right-0 top-0 z-50 h-dvh w-80 bg-white shadow-2xl transition-transform duration-300 ease-out md:hidden ${
-          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Drawer header */}
@@ -414,7 +414,7 @@ export function Header() {
                 {/* Profile card */}
                 <button
                   onClick={() => {
-                    router.push('/account');
+                    router.push("/account");
                     setMobileMenuOpen(false);
                   }}
                   className="flex w-full items-center gap-3 rounded-2xl bg-blue-50 border border-blue-100 p-3 mb-4 transition hover:bg-blue-100 cursor-pointer"
@@ -435,7 +435,7 @@ export function Header() {
                 {/* Ayo Jualan — full width CTA */}
                 <button
                   onClick={() => {
-                    router.push('/store-panel');
+                    router.push("/store-panel");
                     setMobileMenuOpen(false);
                   }}
                   className="flex w-full items-center gap-3 rounded-2xl bg-blue-600 px-4 py-3 mb-4 transition hover:bg-blue-700 active:scale-[0.98] cursor-pointer"
@@ -472,13 +472,13 @@ export function Header() {
                       }}
                       className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition cursor-pointer ${
                         active
-                          ? 'bg-blue-50 text-blue-600'
-                          : 'text-gray-700 hover:bg-gray-50'
+                          ? "bg-blue-50 text-blue-600"
+                          : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       <div
                         className={`flex h-8 w-8 items-center justify-center rounded-xl ${
-                          active ? 'bg-blue-100' : 'bg-gray-100'
+                          active ? "bg-blue-100" : "bg-gray-100"
                         }`}
                       >
                         <Icon className="h-4 w-4" />
@@ -486,7 +486,7 @@ export function Header() {
                       <span>{item.label}</span>
                       {item.badge && item.badge > 0 && (
                         <span className="ml-auto rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                          {item.badge > 99 ? '99+' : item.badge}
+                          {item.badge > 99 ? "99+" : item.badge}
                         </span>
                       )}
                     </button>
@@ -541,13 +541,13 @@ export function Header() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{isLogin ? 'Masuk' : 'Buat Akun'}</DialogTitle>
+            <DialogTitle>{isLogin ? "Masuk" : "Buat Akun"}</DialogTitle>
           </DialogHeader>
           {isLogin ? (
             <>
               <LoginForm onSuccess={() => setOpen(false)} />
               <p className="text-center text-[13px] text-gray-500">
-                Belum punya akun?{' '}
+                Belum punya akun?{" "}
                 <span
                   onClick={() => setIsLogin(false)}
                   className="cursor-pointer font-semibold text-blue-600 hover:underline"
