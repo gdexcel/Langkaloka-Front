@@ -1,72 +1,75 @@
-"use client"
+//langkaloka-v1\app\chat\page.tsx
+"use client";
 
-import { useEffect, useState } from "react"
-import axios from "axios"
-import { Header } from "@/components/views/Header"
-import { useRouter } from "next/navigation"
-import Pusher from "pusher-js"
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Header } from "@/components/views/Header";
+import { useRouter } from "next/navigation";
+import Pusher from "pusher-js";
 
 export default function ChatListPage() {
-  const router = useRouter()
+  const router = useRouter();
 
-  const [chats, setChats] = useState<any[]>([])
-  const [typingUsers, setTypingUsers] = useState<{ [key: string]: boolean }>({})
+  const [chats, setChats] = useState<any[]>([]);
+  const [typingUsers, setTypingUsers] = useState<{ [key: string]: boolean }>(
+    {},
+  );
 
   const fetchChats = async () => {
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("token");
 
       const res = await axios.get("/api/chat", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      });
 
-      setChats(res.data)
+      setChats(res.data);
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchChats()
+    fetchChats();
 
     const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-    })
+    });
 
-    const channel = pusher.subscribe("chat-list")
+    const channel = pusher.subscribe("chat-list");
 
     // 🔥 UPDATE CHAT LIST
     channel.bind("update", (data: any) => {
-      console.log("🔥 UPDATE MASUK", data)
-      fetchChats()
-    })
+      console.log("🔥 UPDATE MASUK", data);
+      fetchChats();
+    });
 
     // 🔥 TYPING LISTENER
     channel.bind("typing", (data: any) => {
-      const myId = localStorage.getItem("userId")
+      const myId = localStorage.getItem("userId");
 
-      if (data.userId === myId) return
+      if (data.userId === myId) return;
 
       setTypingUsers((prev) => ({
         ...prev,
-        [data.chatId]: true
-      }))
+        [data.chatId]: true,
+      }));
 
       setTimeout(() => {
         setTypingUsers((prev) => ({
           ...prev,
-          [data.chatId]: false
-        }))
-      }, 2000)
-    })
+          [data.chatId]: false,
+        }));
+      }, 2000);
+    });
 
     return () => {
-      channel.unbind_all()
-      channel.unsubscribe()
-    }
-  }, [])
+      channel.unbind_all();
+      channel.unsubscribe();
+    };
+  }, []);
 
   return (
     <main className="min-h-screen">
@@ -76,20 +79,15 @@ export default function ChatListPage() {
         <h1 className="text-2xl font-bold mb-4">Chat</h1>
 
         <div className="flex flex-col">
-
           {chats.map((chat, index) => (
             <div
               key={`${chat.id}-${index}`}
               onClick={() => router.push(`/chat/${chat.id}`)}
               className="p-4 border-b cursor-pointer hover:bg-gray-50 transition"
             >
-
               <div className="flex justify-between items-center">
-
                 {/* 🔥 NAMA USER */}
-                <p className="font-semibold">
-                  {chat.otherUserName || "User"}
-                </p>
+                <p className="font-semibold">{chat.otherUserName || "User"}</p>
 
                 {/* 🔥 JAM */}
                 <p className="text-xs text-gray-400">
@@ -97,12 +95,10 @@ export default function ChatListPage() {
                     ? new Date(chat.updatedAt).toLocaleTimeString()
                     : ""}
                 </p>
-
               </div>
 
               {/* 🔥 LAST MESSAGE / TYPING */}
               <p className="text-sm mt-1 line-clamp-1">
-
                 {typingUsers[chat.id] ? (
                   <span className="text-green-500 italic">
                     sedang mengetik...
@@ -112,14 +108,11 @@ export default function ChatListPage() {
                     {chat.lastMessage || "Belum ada pesan"}
                   </span>
                 )}
-
               </p>
-
             </div>
           ))}
-
         </div>
       </div>
     </main>
-  )
+  );
 }

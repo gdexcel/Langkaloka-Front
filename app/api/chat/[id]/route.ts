@@ -1,13 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db/client';
-import { messages, chats, users } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-import { verifyToken } from '@/lib/auth';
-import { pusher } from '@/lib/pusher';
-import { sendEmail } from '@/lib/mailer';
+//langkaloka-v1\app\api\chat\[id]\route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db/client";
+import { messages, chats, users, products, productImages } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { verifyToken } from "@/lib/auth";
+import { pusher } from "@/lib/pusher";
+import { sendEmail } from "@/lib/mailer";
 
 // 🔥 IMPORT ONLINE CHECK
-import { isUserOnline } from '@/app/api/user/online/route';
+import { isUserOnline } from "@/app/api/user/online/route";
 
 // 🔥 ANTI SPAM EMAIL
 const emailCooldown = new Map<string, number>();
@@ -17,22 +18,45 @@ export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
-  try {
-    const { id } = await context.params;
+  const { id } = await context.params;
 
-    const allMessages = await db
-      .select()
-      .from(messages)
-      .where(eq(messages.chatId, id));
+  const allMessages = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.chatId, id));
 
-    return NextResponse.json(allMessages);
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: 'Failed to fetch messages' },
-      { status: 500 },
-    );
-  }
+  // 🔥 Enrich product messages
+  const enriched = await Promise.all(
+    allMessages.map(async (msg) => {
+      if (msg.type === "product" && msg.productId) {
+        const product = await db
+          .select({
+            id: products.id,
+            name: products.name,
+            price: products.price,
+          })
+          .from(products)
+          .where(eq(products.id, msg.productId))
+          .limit(1);
+
+        const images = await db
+          .select({ url: productImages.url })
+          .from(productImages)
+          .where(eq(productImages.productId, msg.productId))
+          .limit(1);
+
+        return {
+          ...msg,
+          product: product[0]
+            ? { ...product[0], image: images[0]?.url ?? null }
+            : null,
+        };
+      }
+      return msg;
+    }),
+  );
+
+  return NextResponse.json(enriched);
 }
 
 // 🔥 POST → kirim message
@@ -45,17 +69,17 @@ export async function POST(
     const body = await req.json();
     const { text } = body;
 
-    const authHeader = req.headers.get('authorization');
+    const authHeader = req.headers.get("authorization");
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.split(" ")[1];
     const decoded = verifyToken(token);
 
     if (!decoded) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // 🔥 INSERT MESSAGE
@@ -75,7 +99,7 @@ export async function POST(
       .where(eq(chats.id, id));
 
     // 🔥 PUSHER CHAT ROOM
-    await pusher.trigger(`chat-${id}`, 'new-message', message);
+    await pusher.trigger(`chat-${id}`, "new-message", message);
 
     const chatDataForRealtime = await db
       .select()
@@ -86,7 +110,7 @@ export async function POST(
     const chatRealtime = chatDataForRealtime[0];
 
     // 🔥 PUSHER CHAT LIST
-    await pusher.trigger('chat-list', 'update', {
+    await pusher.trigger("chat-list", "update", {
       chatId: id,
       senderId: decoded.id,
       buyerId: chatRealtime?.buyerId,
@@ -94,7 +118,7 @@ export async function POST(
       text,
     });
 
-    console.log('🔥 PUSHER CHAT LIST TRIGGERED', id);
+    console.log("🔥 PUSHER CHAT LIST TRIGGERED", id);
 
     // ===============================
     // 🔥 EMAIL NOTIFICATION (FINAL + ONLINE CHECK)
@@ -123,7 +147,7 @@ export async function POST(
         if (otherUser?.email) {
           // 🟢 STEP 3: CHECK ONLINE
           if (isUserOnline(otherUser.id)) {
-            console.log('🟢 USER ONLINE → SKIP EMAIL');
+            console.log("🟢 USER ONLINE → SKIP EMAIL");
           } else {
             // 🔥 ANTI SPAM
             const now = Date.now();
@@ -174,26 +198,26 @@ export async function POST(
 
               await sendEmail(
                 otherUser.email,
-                'Pesan Baru di LangkaLoka 💬',
+                "Pesan Baru di LangkaLoka 💬",
                 html,
               );
 
-              console.log('📩 EMAIL SENT (OFFLINE USER)');
+              console.log("📩 EMAIL SENT (OFFLINE USER)");
             } else {
-              console.log('⏳ EMAIL SKIPPED (COOLDOWN)');
+              console.log("⏳ EMAIL SKIPPED (COOLDOWN)");
             }
           }
         }
       }
     } catch (err) {
-      console.log('❌ EMAIL ERROR (gapapa):', err);
+      console.log("❌ EMAIL ERROR (gapapa):", err);
     }
 
     return NextResponse.json(message);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: 'Failed to send message' },
+      { error: "Failed to send message" },
       { status: 500 },
     );
   }

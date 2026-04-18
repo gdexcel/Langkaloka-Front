@@ -1,3 +1,4 @@
+//langkaloka-v1\app\product\[id]\page.tsx
 "use client";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";

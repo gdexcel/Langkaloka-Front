@@ -36,6 +36,13 @@
       "when": 1776144776132,
       "tag": "0004_shocking_lizard",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1776486463175,
+      "tag": "0005_stiff_klaw",
+      "breakpoints": true
     }
   ]
 }
