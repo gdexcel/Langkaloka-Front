@@ -13,7 +13,7 @@ function ProductCard({ product, isMe }: { product: any; isMe: boolean }) {
     <Link href={`/product/${product.id}`}>
       <div
         className={`
-          flex gap-3 p-3 rounded-2xl max-w-[260px] border cursor-pointer transition hover:opacity-80
+          flex gap-3 p-3 rounded-2xl max-w-25 border cursor-pointer transition hover:opacity-80
           ${isMe ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}
         `}
       >
@@ -21,7 +21,7 @@ function ProductCard({ product, isMe }: { product: any; isMe: boolean }) {
           <img
             src={product.image}
             alt={product.name}
-            className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+            className="w-16 h-16 object-cover rounded-lg flex shrink-0"
           />
         )}
         <div className="flex flex-col justify-center min-w-0">
@@ -238,7 +238,7 @@ export default function ChatPage() {
                       messages.find((msg) => msg.type === "product")?.product
                         ?.name
                     }
-                    className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                    className="w-16 h-16 object-cover rounded-lg flex shrink-0"
                   />
                 )}
                 <div className="flex flex-col justify-center min-w-0">
@@ -268,7 +268,7 @@ export default function ChatPage() {
         {/* 🔥 MESSAGE LIST — product bubble di-filter, tidak ikut render di sini */}
         <div
           ref={containerRef}
-          className="border rounded-lg p-4 h-[400px] overflow-y-auto flex flex-col gap-2"
+          className="border rounded-lg p-4 h-100 overflow-y-auto flex flex-col gap-2"
         >
           {messages
             .filter((msg) => msg.type !== "product") // 🔥 skip product message di scroll area
