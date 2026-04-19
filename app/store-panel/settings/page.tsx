@@ -21,6 +21,8 @@ export default function StoreSettingsPage() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
+  const [vaNumber, setVaNumber] = useState('');
+  const [vaBank, setVaBank] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [me, setMe] = useState<MeData | null>(null);
@@ -41,6 +43,8 @@ export default function StoreSettingsPage() {
         setName(store.name);
         setDescription(store.description || '');
         setLocation(store.location || '');
+        setVaNumber(store.vaNumber || '');
+        setVaBank(store.vaBank || '');
       }
       return res.data;
     } catch (error) {
@@ -79,7 +83,7 @@ export default function StoreSettingsPage() {
       const imageBase64 = image ? await toBase64(image) : undefined;
       await axios.post(
         '/api/store/create',
-        { name, description, location, image: imageBase64 },
+        { name, description, location, image: imageBase64, vaNumber, vaBank },
         { headers: { Authorization: `Bearer ${token}` } },
       );
       await fetchStore();
@@ -262,6 +266,34 @@ export default function StoreSettingsPage() {
               onChange={(e) => setLocation(e.target.value)}
               placeholder="Contoh: Bandung, Jawa Barat"
             />
+          </div>
+        </div>
+
+           {/* 💳 VA SECTION */}
+        <div className="p-4 border rounded-2xl bg-gray-50">
+          <p className="text-sm font-semibold mb-3">💳 Virtual Account</p>
+
+          <div className="flex flex-col gap-3">
+
+            <select
+              className="border p-3 rounded-xl"
+              value={vaBank}
+              onChange={(e) => setVaBank(e.target.value)}
+            >
+              <option value="">Pilih Bank</option>
+              <option value="BCA">BCA</option>
+              <option value="BRI">BRI</option>
+              <option value="BNI">BNI</option>
+              <option value="MANDIRI">Mandiri</option>
+            </select>
+
+            <input
+              className="border p-3 rounded-xl"
+              value={vaNumber}
+              onChange={(e) => setVaNumber(e.target.value)}
+              placeholder="Nomor VA"
+            />
+
           </div>
         </div>
 

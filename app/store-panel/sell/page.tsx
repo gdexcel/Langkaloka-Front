@@ -326,6 +326,8 @@ export default function SellPage() {
                 onChange={(e) => setCategoryId(e.target.value)}
               >
                 <option value="">Pilih Kategori</option>
+                  <option value="pria">Pria</option>
+  <option value="wanita">Wanita</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}

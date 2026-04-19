@@ -159,6 +159,26 @@ export default function StorePage() {
             </p>
           </div>
         </div>
+        {/* 💳 VA */}
+{data.store.vaNumber && (
+  <div className="mt-3 p-3 border rounded-xl bg-gray-50">
+    <p className="text-xs text-gray-500">Pembayaran</p>
+
+    <p className="font-semibold text-sm">
+      {data.store.vaBank || "Bank"} - {data.store.vaNumber}
+    </p>
+
+    <button
+      onClick={() => {
+        navigator.clipboard.writeText(data.store.vaNumber)
+        alert("VA disalin!")
+      }}
+      className="text-xs text-blue-500 mt-1 hover:underline"
+    >
+      Copy VA
+    </button>
+  </div>
+)}
 
         {/* PRODUCTS */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

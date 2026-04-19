@@ -1,4 +1,3 @@
-//langkaloka-v1\app\api\store\create\route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/client";
 import { stores } from "@/db/schema";
@@ -22,7 +21,9 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, description, location, image } = body;
+
+    // 🔥 TAMBAH VA
+    const { name, description, location, image, vaNumber, vaBank } = body;
 
     let imageUrl: string | undefined;
 
@@ -40,13 +41,14 @@ export async function POST(req: NextRequest) {
     let store;
 
     if (existingStore) {
-      // 🔥 UPDATE
       const [updated] = await db
         .update(stores)
         .set({
           name,
           description,
           location,
+          vaNumber,
+          vaBank,
           ...(imageUrl && { image: imageUrl }),
         })
         .where(eq(stores.ownerId, decoded.id))
@@ -54,7 +56,6 @@ export async function POST(req: NextRequest) {
 
       store = updated;
     } else {
-      // 🔥 CREATE
       const [created] = await db
         .insert(stores)
         .values({
@@ -62,6 +63,8 @@ export async function POST(req: NextRequest) {
           description,
           location,
           ownerId: decoded.id,
+          vaNumber,
+          vaBank,
           ...(imageUrl && { image: imageUrl }),
         })
         .returning();

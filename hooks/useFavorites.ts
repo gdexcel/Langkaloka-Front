@@ -8,6 +8,7 @@ export const useFavorites = () => {
     queryFn: async () => {
       const token = localStorage.getItem('token');
 
+
       const { data } = await axios.get('/api/favorites', {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -38,6 +38,8 @@ export const stores = pgTable("stores", {
 
   image: text("image"), // 🔥 TAMBAH
   location: text("location"), // 🔥 TAMBAH
+  vaNumber: text("va_number"),
+  vaBank: text("vaBank"),
 
   isActive: boolean("is_active").notNull().default(true),
 
