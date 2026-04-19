@@ -153,3 +153,15 @@ export const storeRatings = pgTable("store_ratings", {
 
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+export const transactions = pgTable("transactions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+
+  productId: uuid("product_id").notNull(),
+  buyerId: uuid("buyer_id").notNull(),
+
+  proof: text("proof"),
+  status: text("status").default("pending"), // pending | approved
+
+  createdAt: timestamp("created_at").defaultNow(),
+});

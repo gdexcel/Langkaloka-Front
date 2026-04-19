@@ -18,7 +18,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Product = {
   id: string;
@@ -42,6 +42,10 @@ export default function ProductDetailPage() {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0); // 🔥 foto aktif
+  // 🔥 UPLOAD BUKTI
+const [showUpload, setShowUpload] = useState(false);
+const [alreadyUploaded, setAlreadyUploaded] = useState(false);
+const [file, setFile] = useState<File | null>(null);
 
   const { data: product, isLoading: productLoading } = useProduct(id);
   const { data: user } = useCurrentUser();
@@ -52,6 +56,28 @@ export default function ProductDetailPage() {
 
   const isFavorite =
     product && favorites.some((fav: any) => fav.productId === product.id);
+    useEffect(() => {
+  const checkUpload = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await axios.get(`/api/transactions/me?productId=${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.data) {
+        setAlreadyUploaded(true);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  checkUpload();
+}, [id]);
 
   // 🔥 Normalise: support images[] dan fallback ke image string lama
   const imageList: string[] =
@@ -149,6 +175,53 @@ export default function ProductDetailPage() {
       console.error(error);
     }
   };
+
+  // 🔥 HANDLE UPLOAD
+const handleUpload = async () => {
+  if (!file) {
+    alert("Pilih gambar dulu");
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+
+    const base64 = await new Promise<string>((resolve) => {
+      reader.onloadend = () => resolve(reader.result as string);
+    });
+
+    // upload ke cloudinary
+    const uploadRes = await axios.post("/api/upload", {
+      image: base64,
+    });
+
+    const url = uploadRes.data.url;
+
+    // simpan ke backend
+    await axios.post(
+      "/api/transactions",
+      {
+        productId: id,
+        proof: url,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    alert("Bukti transfer berhasil dikirim!");
+    setShowUpload(false);
+    setFile(null);
+
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -319,14 +392,35 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="sticky bottom-3 z-10 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm md:static md:border-0 md:bg-transparent md:p-0 md:shadow-none">
-              {!isOwner && (
-                <button
-                  onClick={handleChat}
-                  className="w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
-                >
-                  Chat Seller
-                </button>
-              )}
+      {!isOwner && !product.isSold && (
+  <div className="flex flex-col gap-2">
+    <button
+      onClick={handleChat}
+      className="w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+    >
+      Chat Seller
+    </button>
+
+    <button
+      onClick={() => {
+        if (alreadyUploaded) {
+          alert("Kamu sudah mengirimkan bukti pembayaran");
+          return;
+        }
+        setShowUpload(true);
+      }}
+      className="w-full bg-blue-600 text-white py-3 rounded-xl mt-2"
+    >
+      Saya Sudah Bayar
+    </button>
+
+    {alreadyUploaded && (
+      <p className="text-xs text-green-600 text-center">
+        ✔ Bukti pembayaran sudah dikirim
+      </p>
+    )}
+  </div>
+)}
               {isOwner && !product.isSold && (
                 <button
                   onClick={() => markAsSoldorUnsold(true)}
@@ -347,6 +441,48 @@ export default function ProductDetailPage() {
           </section>
         </div>
       </div>
+      {showUpload && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-xl space-y-4">
+
+      <h2 className="font-bold">Upload Bukti Transfer</h2>
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          if (!e.target.files) return;
+
+          const f = e.target.files[0];
+
+          if (f.size > 2 * 1024 * 1024) {
+            alert("Max 2MB");
+            return;
+          }
+
+          setFile(f);
+        }}
+      />
+
+      <div className="flex gap-2">
+        <button
+          onClick={() => setShowUpload(false)}
+          className="flex-1 border py-2 rounded"
+        >
+          Batal
+        </button>
+
+        <button
+          onClick={handleUpload}
+          className="flex-1 bg-blue-600 text-white py-2 rounded"
+        >
+          Upload
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
     </main>
   );
 }

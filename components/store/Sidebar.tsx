@@ -2,7 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, PlusCircle, Store } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Package,
+  PlusCircle,
+  Store,
+  Inbox, // 🔥 tambah ini
+} from 'lucide-react';
 
 const menus = [
   {
@@ -24,6 +30,11 @@ const menus = [
     name: 'Setting Toko',
     href: '/store-panel/settings',
     icon: Store,
+  },
+  {
+    name: 'Transaksi', // 🔥 menu baru
+    href: '/store-panel/transactions',
+    icon: Inbox,
   },
 ];
 
@@ -77,6 +88,7 @@ export default function Sidebar() {
         </div>
       </aside>
 
+      {/* MOBILE */}
       <div className="no-scrollbar -mx-4 mb-4 flex gap-2 overflow-x-auto px-4 py-1 lg:hidden">
         {menus.map((menu) => {
           const Icon = menu.icon;
