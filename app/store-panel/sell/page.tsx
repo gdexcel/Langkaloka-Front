@@ -1,3 +1,4 @@
+//langkaloka-v1\app\store-panel\sell\page.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -105,23 +106,21 @@ export default function SellPage() {
     try {
       const token = localStorage.getItem("token");
 
-      // Upload semua gambar yang ada secara paralel
-      const uploadPromises = imageSlots.map(async (file) => {
-        if (!file) return null;
+      // ✅ Sequential upload - urutan dijamin
+      const imageUrls: string[] = [];
 
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
+      for (const file of imageSlots) {
+        if (!file) continue;
 
         const base64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
         });
 
         const uploadRes = await axios.post("/api/upload", { image: base64 });
-        return uploadRes.data.url as string;
-      });
-
-      const uploadedUrls = await Promise.all(uploadPromises);
-      const imageUrls = uploadedUrls.filter(Boolean) as string[];
+        imageUrls.push(uploadRes.data.url as string);
+      }
 
       await axios.post(
         "/api/products/create",
@@ -326,8 +325,7 @@ export default function SellPage() {
                 onChange={(e) => setCategoryId(e.target.value)}
               >
                 <option value="">Pilih Kategori</option>
-                  <option value="pria">Pria</option>
-  <option value="wanita">Wanita</option>
+
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}

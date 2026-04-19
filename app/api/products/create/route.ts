@@ -55,9 +55,10 @@ export async function POST(req: NextRequest) {
     // Insert semua images sekaligus (kalau ada)
     if (images && images.length > 0) {
       await db.insert(productImages).values(
-        images.map((url: string) => ({
+        images.map((url: string, index: number) => ({
           productId: product.id,
           url,
+          order: index, // 0 = thumbnail
         })),
       );
     }

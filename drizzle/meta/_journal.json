@@ -43,6 +43,20 @@
       "when": 1776486463175,
       "tag": "0005_stiff_klaw",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1776590052403,
+      "tag": "0006_silent_groot",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1776638905064,
+      "tag": "0007_complete_khan",
+      "breakpoints": true
     }
   ]
 }

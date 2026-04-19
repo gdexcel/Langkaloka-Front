@@ -76,26 +76,6 @@ export default function ProductCard({
 
   return (
     <Link href={`/product/${product.id}`} className="group block h-full">
-      <button
-        onClick={toggleFavorite}
-        disabled={!isAuthenticated || isSubmitting}
-        title={
-          !isAuthenticated
-            ? "Login untuk menambahkan ke wishlist"
-            : "Toggle wishlist"
-        }
-        aria-label="toggle wishlist"
-        className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/90 text-gray-500 shadow-sm backdrop-blur-sm transition hover:scale-105 hover:text-rose-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-      >
-        {isSubmitting ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <Heart
-            className={`h-4 w-4 transition-colors ${isFavorite ? "fill-rose-500 text-rose-500" : ""}`}
-          />
-        )}
-      </button>
-
       {product.image ? (
         <div className="overflow-hidden bg-gray-100 rounded-sm">
           <img

@@ -1,9 +1,10 @@
-'use client';
+//langkaloka-v1\app\store-panel\settings\page.tsx
+"use client";
 
-import { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { useEffect, useState, useRef } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface MeData {
   id: string;
@@ -18,11 +19,11 @@ interface MeData {
 }
 
 export default function StoreSettingsPage() {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [location, setLocation] = useState('');
-  const [vaNumber, setVaNumber] = useState('');
-  const [vaBank, setVaBank] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [vaNumber, setVaNumber] = useState("");
+  const [vaBank, setVaBank] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [me, setMe] = useState<MeData | null>(null);
@@ -33,18 +34,18 @@ export default function StoreSettingsPage() {
 
   const fetchStore = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('/api/store/me', {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("/api/store/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const store = res.data;
       if (store) {
         setMe(store);
         setName(store.name);
-        setDescription(store.description || '');
-        setLocation(store.location || '');
-        setVaNumber(store.vaNumber || '');
-        setVaBank(store.vaBank || '');
+        setDescription(store.description || "");
+        setLocation(store.location || "");
+        setVaNumber(store.vaNumber || "");
+        setVaBank(store.vaBank || "");
       }
       return res.data;
     } catch (error) {
@@ -79,17 +80,17 @@ export default function StoreSettingsPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const imageBase64 = image ? await toBase64(image) : undefined;
       await axios.post(
-        '/api/store/create',
+        "/api/store/create",
         { name, description, location, image: imageBase64, vaNumber, vaBank },
         { headers: { Authorization: `Bearer ${token}` } },
       );
       await fetchStore();
       setSuccess(true);
       setTimeout(() => {
-        router.push('/store-panel');
+        router.push("/store-panel");
       }, 1200);
     } catch (error) {
       console.error(error);
@@ -105,12 +106,12 @@ export default function StoreSettingsPage() {
       {/* Page Title */}
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-800">
-          {hasStore ? 'Perbarui Toko' : 'Buat Toko Baru'}
+          {hasStore ? "Perbarui Toko" : "Buat Toko Baru"}
         </h1>
         <p className="text-sm text-gray-400 mt-0.5">
           {hasStore
-            ? 'Edit informasi toko preloved kamu'
-            : 'Isi data di bawah untuk mulai berjualan'}
+            ? "Edit informasi toko preloved kamu"
+            : "Isi data di bawah untuk mulai berjualan"}
         </p>
       </div>
 
@@ -168,7 +169,7 @@ export default function StoreSettingsPage() {
 
           <div>
             <p className="text-sm font-medium text-gray-700">
-              {currentImage ? 'Foto toko dipilih' : 'Foto Toko'}
+              {currentImage ? "Foto toko dipilih" : "Foto Toko"}
             </p>
             <p className="text-xs text-gray-400 mt-0.5">
               JPG, PNG, WebP. Maks 5MB.
@@ -178,7 +179,7 @@ export default function StoreSettingsPage() {
               onClick={() => fileInputRef.current?.click()}
               className="mt-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700"
             >
-              {currentImage ? 'Ganti foto →' : 'Pilih foto →'}
+              {currentImage ? "Ganti foto →" : "Pilih foto →"}
             </button>
           </div>
 
@@ -269,12 +270,11 @@ export default function StoreSettingsPage() {
           </div>
         </div>
 
-           {/* 💳 VA SECTION */}
+        {/* 💳 VA SECTION */}
         <div className="p-4 border rounded-2xl bg-gray-50">
           <p className="text-sm font-semibold mb-3">💳 Virtual Account</p>
 
           <div className="flex flex-col gap-3">
-
             <select
               className="border p-3 rounded-xl"
               value={vaBank}
@@ -293,7 +293,6 @@ export default function StoreSettingsPage() {
               onChange={(e) => setVaNumber(e.target.value)}
               placeholder="Nomor VA"
             />
-
           </div>
         </div>
 
@@ -304,8 +303,8 @@ export default function StoreSettingsPage() {
           className="w-full py-3.5 rounded-xl font-semibold text-white text-sm transition-opacity disabled:opacity-70"
           style={{
             background: success
-              ? 'linear-gradient(135deg, #10b981, #059669)'
-              : 'linear-gradient(135deg, #3b82f6 0%, #6366f1 60%, #7c3aed 100%)',
+              ? "linear-gradient(135deg, #10b981, #059669)"
+              : "linear-gradient(135deg, #3b82f6 0%, #6366f1 60%, #7c3aed 100%)",
           }}
         >
           {loading ? (
@@ -331,9 +330,9 @@ export default function StoreSettingsPage() {
               Tersimpan! Mengalihkan...
             </span>
           ) : hasStore ? (
-            'Perbarui Toko'
+            "Perbarui Toko"
           ) : (
-            'Buat Toko Sekarang'
+            "Buat Toko Sekarang"
           )}
         </button>
       </form>

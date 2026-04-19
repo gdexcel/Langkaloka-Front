@@ -42,7 +42,8 @@ export async function GET(
     const images = await db
       .select({ url: productImages.url })
       .from(productImages)
-      .where(eq(productImages.productId, id));
+      .where(eq(productImages.productId, id))
+      .orderBy(productImages.order);
 
     return NextResponse.json({
       ...product[0],

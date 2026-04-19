@@ -97,6 +97,8 @@ export const productImages = pgTable("product_images", {
   productId: uuid("product_id").notNull(),
 
   url: text("url").notNull(),
+
+  order: integer("order").notNull().default(0),
 });
 
 // FAVORITES

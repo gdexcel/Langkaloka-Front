@@ -1,3 +1,4 @@
+//langkaloka-v1\app\api\products\route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/client";
 import { products, productImages, categories } from "@/db/schema";
@@ -10,12 +11,12 @@ export async function GET(req: NextRequest) {
 
     // 🔥 Subquery: 1 image pertama per product
     const firstImage = db
-      .select({
+      .selectDistinctOn([productImages.productId], {
         productId: productImages.productId,
-        url: sql<string>`MIN(${productImages.url})`.as("url"),
+        url: productImages.url,
       })
       .from(productImages)
-      .groupBy(productImages.productId)
+      .orderBy(productImages.productId, productImages.order)
       .as("first_image");
 
     const baseQuery = db
