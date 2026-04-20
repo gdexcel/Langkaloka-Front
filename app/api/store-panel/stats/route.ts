@@ -1,22 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db/client';
-import { products, stores } from '@/db/schema';
-import { verifyToken } from '@/lib/auth';
-import { eq } from 'drizzle-orm';
+//langkaloka-v1\app\api\store-panel\stats\route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db/client";
+import { products, stores } from "@/db/schema";
+import { verifyToken } from "@/lib/auth";
+import { eq } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization');
+    const authHeader = req.headers.get("authorization");
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.split(" ")[1];
     const decoded = verifyToken(token);
 
     if (!decoded) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // 🔥 ambil store user
@@ -43,6 +44,7 @@ export async function GET(req: NextRequest) {
     const active = allProducts.filter((p) => !p.isSold).length;
 
     return NextResponse.json({
+      storeId,
       total,
       sold,
       active,
@@ -51,7 +53,7 @@ export async function GET(req: NextRequest) {
     console.error(error);
 
     return NextResponse.json(
-      { error: 'Failed to fetch stats' },
+      { error: "Failed to fetch stats" },
       { status: 500 },
     );
   }
