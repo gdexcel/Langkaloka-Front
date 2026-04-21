@@ -5,8 +5,8 @@ import axios from "axios";
 import { ChevronLeft, Loader2, PencilLine } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 
+type Category = { id: string; name: string };
 const MAX_SLOTS = 4;
 
 export default function EditProductPage() {
@@ -17,18 +17,16 @@ export default function EditProductPage() {
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [condition, setCondition] = useState("baik");
+  const [categoryId, setCategoryId] = useState("");
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Slot bisa berisi URL string (existing) atau File (baru dipilih)
   const [imageSlots, setImageSlots] = useState<(File | string | null)[]>(
     Array(MAX_SLOTS).fill(null),
   );
-  // Preview URL per slot (untuk tampil di UI)
   const [previews, setPreviews] = useState<(string | null)[]>(
     Array(MAX_SLOTS).fill(null),
   );
-
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>(
     Array(MAX_SLOTS).fill(null),
   );
@@ -36,24 +34,25 @@ export default function EditProductPage() {
   const fetchProduct = async () => {
     try {
       setIsFetching(true);
-      const res = await axios.get(`/api/products/${id}`);
-      const p = res.data;
-
+      const [productRes, categoriesRes] = await Promise.all([
+        axios.get(`/api/products/${id}`),
+        axios.get("/api/categories"),
+      ]);
+      const p = productRes.data;
       setName(p.name || "");
       setPrice(String(p.price || ""));
       setDescription(p.description || "");
       setCondition(p.condition || "baik");
+      setCategoryId(p.categoryId || "");
+      setCategories(categoriesRes.data || []);
 
-      // Isi slot dengan existing images
       const existingImages: string[] = p.images || (p.image ? [p.image] : []);
       const newSlots: (string | null)[] = Array(MAX_SLOTS).fill(null);
       const newPreviews: (string | null)[] = Array(MAX_SLOTS).fill(null);
-
       existingImages.slice(0, MAX_SLOTS).forEach((url, i) => {
         newSlots[i] = url;
         newPreviews[i] = url;
       });
-
       setImageSlots(newSlots);
       setPreviews(newPreviews);
     } catch (error) {
@@ -67,17 +66,14 @@ export default function EditProductPage() {
     fetchProduct();
   }, []);
 
-  const handleSlotClick = (index: number) => {
+  const handleSlotClick = (index: number) =>
     fileInputRefs.current[index]?.click();
-  };
 
   const handleFileChange = (index: number, file: File | null) => {
     if (!file) return;
-
     const newSlots = [...imageSlots];
     newSlots[index] = file;
     setImageSlots(newSlots);
-
     const reader = new FileReader();
     reader.onloadend = () => {
       const newPreviews = [...previews];
@@ -95,32 +91,21 @@ export default function EditProductPage() {
     newPreviews[index] = null;
     setImageSlots(newSlots);
     setPreviews(newPreviews);
-    if (fileInputRefs.current[index]) {
-      fileInputRefs.current[index]!.value = "";
-    }
+    if (fileInputRefs.current[index]) fileInputRefs.current[index]!.value = "";
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const filledSlots = imageSlots.filter(Boolean);
-    if (filledSlots.length === 0) {
+    if (imageSlots.filter(Boolean).length === 0) {
       alert("Minimal 1 foto harus diisi!");
       return;
     }
-
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem("token");
-
-      // Upload slot yang File baru, keep URL yang sudah existing
       const uploadPromises = imageSlots.map(async (slot) => {
         if (!slot) return null;
-
-        // Kalau masih string (URL lama), langsung pakai
         if (typeof slot === "string") return slot;
-
-        // Kalau File baru, upload dulu
         const reader = new FileReader();
         reader.readAsDataURL(slot);
         const base64 = await new Promise<string>((resolve) => {
@@ -129,10 +114,8 @@ export default function EditProductPage() {
         const uploadRes = await axios.post("/api/upload", { image: base64 });
         return uploadRes.data.url as string;
       });
-
       const uploadedUrls = await Promise.all(uploadPromises);
       const imageUrls = uploadedUrls.filter(Boolean) as string[];
-
       await axios.patch(
         `/api/products/${id}/edit`,
         {
@@ -140,13 +123,11 @@ export default function EditProductPage() {
           price: Number(price),
           description,
           condition,
+          categoryId: categoryId || null,
           images: imageUrls,
         },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-
       alert("Produk berhasil diupdate");
       router.push("/store-panel/products");
     } catch (error) {
@@ -179,8 +160,7 @@ export default function EditProductPage() {
         onClick={() => router.push("/store-panel/products")}
         className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition hover:text-blue-600"
       >
-        <ChevronLeft className="h-4 w-4" />
-        Kembali ke Produk Saya
+        <ChevronLeft className="h-4 w-4" /> Kembali ke Produk Saya
       </button>
 
       <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm md:p-6">
@@ -206,12 +186,10 @@ export default function EditProductPage() {
                 ({imageSlots.filter(Boolean).length}/{MAX_SLOTS})
               </span>
             </label>
-
             <div className="grid grid-cols-4 gap-2">
               {Array.from({ length: MAX_SLOTS }).map((_, index) => {
                 const preview = previews[index];
                 const isFirst = index === 0;
-
                 return (
                   <div key={index} className="relative">
                     <input
@@ -225,21 +203,10 @@ export default function EditProductPage() {
                         handleFileChange(index, e.target.files?.[0] ?? null)
                       }
                     />
-
                     <button
                       type="button"
                       onClick={() => handleSlotClick(index)}
-                      className={`
-                        relative w-full aspect-square rounded-xl overflow-hidden
-                        border-2 transition-all duration-150
-                        ${
-                          preview
-                            ? "border-gray-900 shadow-sm"
-                            : isFirst
-                              ? "border-dashed border-gray-400 hover:border-gray-600 bg-gray-50 hover:bg-gray-100"
-                              : "border-dashed border-gray-200 hover:border-gray-400 bg-gray-50 hover:bg-gray-100"
-                        }
-                      `}
+                      className={`relative w-full aspect-square rounded-xl overflow-hidden border-2 transition-all duration-150 ${preview ? "border-gray-900 shadow-sm" : isFirst ? "border-dashed border-gray-400 hover:border-gray-600 bg-gray-50 hover:bg-gray-100" : "border-dashed border-gray-200 hover:border-gray-400 bg-gray-50 hover:bg-gray-100"}`}
                     >
                       {preview ? (
                         <img
@@ -269,14 +236,12 @@ export default function EditProductPage() {
                           )}
                         </div>
                       )}
-
                       {preview && (
                         <span className="absolute top-1 left-1 bg-black/60 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
                           {index + 1}
                         </span>
                       )}
                     </button>
-
                     {preview && (
                       <button
                         type="button"
@@ -302,7 +267,6 @@ export default function EditProductPage() {
                 );
               })}
             </div>
-
             <p className="text-xs text-gray-400 mt-2">
               Foto pertama akan jadi foto utama produk. Klik slot untuk ganti
               foto.
@@ -345,26 +309,48 @@ export default function EditProductPage() {
               Deskripsi
             </label>
             <textarea
-              className="min-h-30 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 resize-none"
+              className="min-h-[120px] w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 resize-none"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Jelaskan kondisi, kelengkapan, atau detail penting produk."
             />
           </div>
 
-          {/* KONDISI */}
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-              Kondisi
-            </label>
-            <select
-              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
-              value={condition}
-              onChange={(e) => setCondition(e.target.value)}
-            >
-              <option value="buruk">Buruk</option>
-              <option value="baik">Baik</option>
-            </select>
+          {/* KATEGORI & KONDISI */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Kategori
+              </label>
+              <select
+                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+              >
+                {/* ✅ Default "All" — value kosong = null di DB */}
+                <option value="">All</option>
+                {categories
+                  .filter((c) => c.name.toLowerCase() !== "all")
+                  .map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Kondisi
+              </label>
+              <select
+                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+                value={condition}
+                onChange={(e) => setCondition(e.target.value)}
+              >
+                <option value="buruk">Buruk</option>
+                <option value="baik">Baik</option>
+              </select>
+            </div>
           </div>
 
           {/* ACTIONS */}

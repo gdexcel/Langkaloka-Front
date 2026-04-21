@@ -59,17 +59,14 @@ export default function SellPage() {
     checkStoreAndCategories();
   }, []);
 
-  const handleSlotClick = (index: number) => {
+  const handleSlotClick = (index: number) =>
     fileInputRefs.current[index]?.click();
-  };
 
   const handleFileChange = (index: number, file: File | null) => {
     if (!file) return;
-
     const newSlots = [...imageSlots];
     newSlots[index] = file;
     setImageSlots(newSlots);
-
     const reader = new FileReader();
     reader.onloadend = () => {
       const newPreviews = [...previews];
@@ -87,41 +84,29 @@ export default function SellPage() {
     newPreviews[index] = null;
     setImageSlots(newSlots);
     setPreviews(newPreviews);
-    if (fileInputRefs.current[index]) {
-      fileInputRefs.current[index]!.value = "";
-    }
+    if (fileInputRefs.current[index]) fileInputRefs.current[index]!.value = "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const filledSlots = imageSlots.filter(Boolean);
-    if (filledSlots.length === 0) {
+    if (imageSlots.filter(Boolean).length === 0) {
       alert("Minimal 1 foto harus diisi!");
       return;
     }
-
     setIsSubmitting(true);
-
     try {
       const token = localStorage.getItem("token");
-
-      // ✅ Sequential upload - urutan dijamin
       const imageUrls: string[] = [];
-
       for (const file of imageSlots) {
         if (!file) continue;
-
         const base64 = await new Promise<string>((resolve) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result as string);
           reader.readAsDataURL(file);
         });
-
         const uploadRes = await axios.post("/api/upload", { image: base64 });
         imageUrls.push(uploadRes.data.url as string);
       }
-
       await axios.post(
         "/api/products/create",
         {
@@ -132,11 +117,8 @@ export default function SellPage() {
           categoryId: categoryId || null,
           images: imageUrls,
         },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-
       alert("Produk berhasil dipublikasikan!");
       router.push("/");
     } catch (error) {
@@ -182,15 +164,12 @@ export default function SellPage() {
                   ({imageSlots.filter(Boolean).length}/{MAX_SLOTS})
                 </span>
               </label>
-
               <div className="grid grid-cols-4 gap-2">
                 {Array.from({ length: MAX_SLOTS }).map((_, index) => {
                   const preview = previews[index];
                   const isFirst = index === 0;
-
                   return (
                     <div key={index} className="relative">
-                      {/* Hidden file input per slot */}
                       <input
                         type="file"
                         accept="image/*"
@@ -202,22 +181,10 @@ export default function SellPage() {
                           handleFileChange(index, e.target.files?.[0] ?? null)
                         }
                       />
-
-                      {/* Slot box */}
                       <button
                         type="button"
                         onClick={() => handleSlotClick(index)}
-                        className={`
-                          relative w-full aspect-square rounded-xl overflow-hidden
-                          border-2 transition-all duration-150
-                          ${
-                            preview
-                              ? "border-gray-900 shadow-sm"
-                              : isFirst
-                                ? "border-dashed border-gray-400 hover:border-gray-600 bg-gray-50 hover:bg-gray-100"
-                                : "border-dashed border-gray-200 hover:border-gray-400 bg-gray-50 hover:bg-gray-100"
-                          }
-                        `}
+                        className={`relative w-full aspect-square rounded-xl overflow-hidden border-2 transition-all duration-150 ${preview ? "border-gray-900 shadow-sm" : isFirst ? "border-dashed border-gray-400 hover:border-gray-600 bg-gray-50 hover:bg-gray-100" : "border-dashed border-gray-200 hover:border-gray-400 bg-gray-50 hover:bg-gray-100"}`}
                       >
                         {preview ? (
                           <Image
@@ -248,16 +215,12 @@ export default function SellPage() {
                             )}
                           </div>
                         )}
-
-                        {/* Badge urutan */}
                         {preview && (
                           <span className="absolute top-1 left-1 bg-black/60 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
                             {index + 1}
                           </span>
                         )}
                       </button>
-
-                      {/* Tombol hapus */}
                       {preview && (
                         <button
                           type="button"
@@ -283,7 +246,6 @@ export default function SellPage() {
                   );
                 })}
               </div>
-
               <p className="text-xs text-gray-400 mt-2">
                 Foto pertama akan jadi foto utama produk. Minimal 1 foto.
               </p>
@@ -311,7 +273,7 @@ export default function SellPage() {
 
             {/* DESKRIPSI */}
             <textarea
-              className="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-gray-400 min-h-30 resize-none"
+              className="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-gray-400 min-h-[120px] resize-none"
               placeholder="Deskripsi"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -324,13 +286,15 @@ export default function SellPage() {
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
               >
-                <option value="">Pilih Kategori</option>
-
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
+                {/* ✅ Default "All" — value kosong = null di DB */}
+                <option value="">All</option>
+                {categories
+                  .filter((c) => c.name.toLowerCase() !== "all")
+                  .map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
               </select>
 
               <select

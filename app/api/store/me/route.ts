@@ -1,59 +1,60 @@
-import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/db/client"
-import { stores } from "@/db/schema"
-import { eq } from "drizzle-orm"
-import { verifyToken } from "@/lib/auth"
+//langkaloka-v1\app\api\store\me\route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db/client";
+import { stores } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { verifyToken } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization")
+    const authHeader = req.headers.get("authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const token = authHeader.split(" ")[1]
-    const decoded = verifyToken(token)
+    const token = authHeader.split(" ")[1];
+    const decoded = verifyToken(token);
 
     if (!decoded) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const store = await db
       .select()
       .from(stores)
       .where(eq(stores.ownerId, decoded.id))
-      .limit(1)
+      .limit(1);
 
     if (store.length < 1) {
-      return NextResponse.json(null)
+      return NextResponse.json(null);
     }
 
-    return NextResponse.json(store[0])
+    return NextResponse.json(store[0]);
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: "Failed" }, { status: 500 })
+    console.error(error);
+    return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }
 
 export async function PATCH(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization")
+    const authHeader = req.headers.get("authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const token = authHeader.split(" ")[1]
-    const decoded = verifyToken(token)
+    const token = authHeader.split(" ")[1];
+    const decoded = verifyToken(token);
 
     if (!decoded) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json()
+    const body = await req.json();
 
-    const { name, description, location, image } = body
+    const { name, description, location, image } = body;
 
     await db
       .update(stores)
@@ -63,11 +64,11 @@ export async function PATCH(req: NextRequest) {
         location,
         ...(image && { image }), // 🔥 hanya update kalau ada
       })
-      .where(eq(stores.ownerId, decoded.id))
+      .where(eq(stores.ownerId, decoded.id));
 
-    return NextResponse.json({ message: "Updated" })
+    return NextResponse.json({ message: "Updated" });
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: "Failed" }, { status: 500 })
+    console.error(error);
+    return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }
