@@ -990,7 +990,7 @@ function GenderButtons() {
           />
         </svg>
         <p className="text-[10px] md:text-xs font-semibold uppercase tracking-widest opacity-75 mb-0.5">
-          Kategori
+          Gender
         </p>
         <h3 className="text-base md:text-xl font-bold">Wanita</h3>
         <p className="text-[11px] md:text-sm opacity-70 mt-0.5 hidden sm:block">
@@ -1049,7 +1049,7 @@ function GenderButtons() {
           />
         </svg>
         <p className="text-[10px] md:text-xs font-semibold uppercase tracking-widest opacity-75 mb-0.5">
-          Kategori
+          Gender
         </p>
         <h3 className="text-base md:text-xl font-bold">Pria</h3>
         <p className="text-[11px] md:text-sm opacity-70 mt-0.5 hidden sm:block">

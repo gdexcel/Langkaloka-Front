@@ -49,10 +49,34 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Scroll-based searchbar visibility
+  const [searchBarVisible, setSearchBarVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
   const queryClient = useQueryClient();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastEventRef = useRef<string | null>(null);
   const prevPathnameRef = useRef(pathname);
+
+  // ── Scroll listener: hide on scroll-down, show on scroll-up ──
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY <= 10) {
+        setSearchBarVisible(true);
+      } else if (currentY > lastScrollY.current + 4) {
+        // scrolling down
+        setSearchBarVisible(false);
+      } else if (currentY < lastScrollY.current - 4) {
+        // scrolling up
+        setSearchBarVisible(true);
+      }
+      lastScrollY.current = currentY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     if (pathname !== "/search") return;
@@ -194,9 +218,10 @@ export function Header() {
 
   return (
     <>
-      {/* ─── DESKTOP HEADER ─── */}
+      {/* ─── HEADER ─── */}
       <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm shadow-sm">
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 md:px-6">
+        {/* ── TIER 1: Logo + Actions (always visible) ── */}
+        <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4 lg:px-6">
           {/* LEFT — Logo */}
           <button
             onClick={() => router.push("/")}
@@ -211,15 +236,15 @@ export function Header() {
                 unoptimized
               />
             </div>
-            <span className="hidden text-lg font-bold tracking-tight text-gray-900 sm:block">
+            <span className="text-lg font-bold tracking-tight text-gray-900">
               LangkaLoka
             </span>
           </button>
 
-          {/* CENTER — Search bar */}
+          {/* CENTER — Search bar (desktop only, inline) */}
           <form
             onSubmit={handleSearch}
-            className="hidden flex-1 md:flex justify-center px-4"
+            className="hidden flex-1 lg:flex justify-center px-4"
           >
             <div className="relative w-full max-w-lg">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -240,11 +265,11 @@ export function Header() {
           </form>
 
           {/* RIGHT — Actions */}
-          <div className="ml-auto flex items-center gap-2 md:ml-0">
+          <div className="ml-auto flex items-center gap-1.5 lg:ml-0">
             {isLoading ? (
               <div className="h-9 w-48 animate-pulse rounded-full bg-gray-100" />
             ) : user ? (
-              <div className="hidden md:flex items-center gap-1.5">
+              <div className="hidden lg:flex items-center gap-1.5">
                 {/* Ayo Jualan CTA */}
                 <button
                   onClick={() => router.push("/store-panel")}
@@ -253,10 +278,8 @@ export function Header() {
                   <span>Ayo Jualan</span>
                 </button>
 
-                {/* Thin divider */}
                 <div className="mx-1 h-5 w-px bg-gray-200" />
 
-                {/* Nav icon buttons */}
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item);
@@ -284,7 +307,6 @@ export function Header() {
                   );
                 })}
 
-                {/* Thin divider */}
                 <div className="mx-1 h-5 w-px bg-gray-200" />
 
                 {/* Profile button */}
@@ -310,7 +332,7 @@ export function Header() {
                 </button>
               </div>
             ) : (
-              <div className="hidden md:flex items-center gap-2">
+              <div className="hidden lg:flex items-center gap-2">
                 <button
                   onClick={() => {
                     setIsLogin(true);
@@ -332,9 +354,9 @@ export function Header() {
               </div>
             )}
 
-            {/* Mobile hamburger */}
+            {/* Mobile/Tablet — Hamburger only */}
             <button
-              className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-gray-100 md:hidden cursor-pointer"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-gray-100 lg:hidden cursor-pointer"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
             >
               {mobileMenuOpen ? (
@@ -345,19 +367,41 @@ export function Header() {
             </button>
           </div>
         </div>
+
+        {/* ── TIER 2: Searchbar (mobile/tablet only, scroll-sensitive) ── */}
+        <div
+          className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+            searchBarVisible ? "max-h-16 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="px-4 pb-3 pt-0">
+            <form onSubmit={handleSearch}>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari items dan brands"
+                  className="h-10 w-full rounded-full border border-gray-200 bg-gray-100 pl-10 pr-4 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+            </form>
+          </div>
+        </div>
       </header>
 
       {/* ─── MOBILE DRAWER BACKDROP ─── */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] md:hidden"
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
       {/* ─── MOBILE DRAWER ─── */}
       <div
-        className={`fixed right-0 top-0 z-50 h-dvh w-80 bg-white shadow-2xl transition-transform duration-300 ease-out md:hidden ${
+        className={`fixed right-0 top-0 z-50 h-dvh w-80 bg-white shadow-2xl transition-transform duration-300 ease-out lg:hidden ${
           mobileMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -384,21 +428,6 @@ export function Header() {
         </div>
 
         <div className="flex h-[calc(100%-3.5rem)] flex-col overflow-y-auto">
-          {/* Search */}
-          <div className="border-b border-gray-100 p-4">
-            <form onSubmit={handleSearch}>
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari barang preloved..."
-                  className="h-10 w-full rounded-full border border-gray-200 bg-gray-50 pl-9 pr-4 text-sm outline-none focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
-                />
-              </div>
-            </form>
-          </div>
-
           <div className="flex-1 p-4 space-y-1">
             {isLoading ? (
               <div className="space-y-2">
@@ -453,8 +482,47 @@ export function Header() {
                   </div>
                 </button>
 
-                {/* Divider label */}
-                <p className="px-1 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                {/* Divider label — Kategori */}
+                <p className="px-1 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                  Gender
+                </p>
+
+                {/* Wanita */}
+                <button
+                  onClick={() => {
+                    router.push("/product/all/women");
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-gray-700 transition hover:bg-pink-50 hover:text-pink-600 cursor-pointer group"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-pink-100 text-pink-500 group-hover:bg-pink-200 transition">
+                    <span className="text-base leading-none">♀</span>
+                  </div>
+                  <span>Wanita</span>
+                  <span className="ml-auto text-[11px] text-gray-400">
+                    Produk wanita
+                  </span>
+                </button>
+
+                {/* Pria */}
+                <button
+                  onClick={() => {
+                    router.push("/product/all/men");
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-gray-700 transition hover:bg-blue-50 hover:text-blue-600 cursor-pointer group"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-100 text-blue-500 group-hover:bg-blue-200 transition">
+                    <span className="text-base leading-none">♂</span>
+                  </div>
+                  <span>Pria</span>
+                  <span className="ml-auto text-[11px] text-gray-400">
+                    Produk pria
+                  </span>
+                </button>
+
+                {/* Divider label — Menu */}
+                <p className="px-1 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
                   Menu
                 </p>
 

@@ -13,10 +13,20 @@ const PAGE_SIZE = 20;
 
 const GENDER_CONFIG: Record<
   string,
-  { label: string; emoji: string; categoryName: string }
+  { label: string; emoji: string; categoryNames: string[] }
 > = {
-  women: { label: "Produk Wanita", emoji: "👗", categoryName: "women" },
-  men: { label: "Produk Pria", emoji: "👔", categoryName: "men" },
+  women: {
+    label: "Produk Wanita",
+    emoji: "👗",
+    categoryNames: ["women", "wanita"],
+  },
+  wanita: {
+    label: "Produk Wanita",
+    emoji: "👗",
+    categoryNames: ["women", "wanita"],
+  },
+  men: { label: "Produk Pria", emoji: "👔", categoryNames: ["men", "pria"] },
+  pria: { label: "Produk Pria", emoji: "👔", categoryNames: ["men", "pria"] },
 };
 
 function SkeletonCard() {
@@ -91,7 +101,7 @@ export default function GenderProductPage() {
   const config = GENDER_CONFIG[gender] ?? {
     label: "Produk",
     emoji: "🛍️",
-    categoryName: gender,
+    categoryNames: [gender],
   };
 
   const { data: allProducts, isLoading } = useProducts();
@@ -124,9 +134,9 @@ export default function GenderProductPage() {
       (allProducts || []).filter((p: any) => {
         const cat =
           typeof p.category === "string" ? p.category : p.category?.name || "";
-        return cat.toLowerCase() === config.categoryName;
+        return config.categoryNames.includes(cat.toLowerCase());
       }),
-    [allProducts, config.categoryName],
+    [allProducts, config.categoryNames],
   );
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
