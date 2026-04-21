@@ -28,14 +28,14 @@ export default function ProductCard({
 
   return (
     <Link href={`/product/${product.id}`} className="group block h-full">
-      <div className="h-full flex flex-col rounded-xl bg-white border border-gray-200 overflow-hidden active:scale-[0.97] transition-all duration-150 md:hover:shadow-md md:hover:border-gray-300">
+      <div className="h-full flex flex-col rounded-lg sm:rounded-xl bg-white border border-gray-200 overflow-hidden active:scale-[0.97] transition-all duration-150 hover:shadow-sm md:hover:shadow-md md:hover:border-gray-300">
         {/* Image */}
         <div className="overflow-hidden bg-gray-100 aspect-square w-full shrink-0">
           {product.image ? (
             <img
               src={product.image}
               alt={product.name}
-              className="w-full h-full object-cover md:group-hover:scale-[1.04] transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-[1.03] md:group-hover:scale-[1.05] transition-transform duration-300"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px]">
@@ -45,19 +45,19 @@ export default function ProductCard({
         </div>
 
         {/* Info */}
-        <div className="flex flex-col justify-between flex-1 p-2 md:p-2.5 min-h-[72px] md:min-h-[84px]">
-          <p className="text-[11px] md:text-sm font-semibold text-gray-900 line-clamp-2 leading-snug">
+        <div className="flex flex-col justify-between flex-1 p-1.5 sm:p-2 md:p-2.5 min-h-[60px] sm:min-h-[72px] md:min-h-[84px] lg:min-h-[90px]">
+          <p className="text-[10px] sm:text-[11px] md:text-xs lg:text-sm font-semibold text-gray-900 line-clamp-2 leading-snug">
             {product.name}
           </p>
-          <div className="mt-1">
-            <p className="text-[11px] md:text-sm font-bold text-gray-900">
+          <div className="mt-0.5 sm:mt-1">
+            <p className="text-[10px] sm:text-[11px] md:text-xs lg:text-sm font-bold text-gray-900">
               {new Intl.NumberFormat("id-ID", {
                 style: "currency",
                 currency: "IDR",
                 minimumFractionDigits: 0,
               }).format(product.price)}
             </p>
-            <p className="text-[10px] md:text-[11px] font-medium text-blue-500 mt-0.5">
+            <p className="text-[9px] sm:text-[10px] md:text-[11px] font-medium text-blue-500 mt-0.5">
               {displayCategory}
             </p>
           </div>
