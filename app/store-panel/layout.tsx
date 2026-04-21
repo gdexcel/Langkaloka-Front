@@ -1,7 +1,8 @@
-'use client';
+//langkaloka-v1\app\store-panel\layout.tsx
+"use client";
 
-import { Header } from '@/components/views/Header';
-import Sidebar from '@/components/store/Sidebar';
+import { Header } from "@/components/views/Header";
+import Sidebar from "@/components/store/Sidebar";
 
 export default function StorePanelLayout({
   children,

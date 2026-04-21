@@ -1,10 +1,11 @@
-//langkaloka-v1\app\store-panel\sell\page.tsx
+// langkaloka-v1\app\store-panel\sell\page.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Store, PlusCircle, ImagePlus, X } from "lucide-react";
 
 type Category = {
   id: string;
@@ -129,15 +130,24 @@ export default function SellPage() {
     }
   };
 
+  // No store state
   if (!hasStore) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
-        <div className="text-6xl">🏪</div>
-        <h2 className="text-2xl font-bold">Kamu belum punya toko</h2>
-        <p className="text-gray-500">Buat toko dulu untuk mulai berjualan</p>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4 text-center px-4">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100">
+          <Store className="h-8 w-8 text-gray-400" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-gray-900">
+            Kamu belum punya toko
+          </h2>
+          <p className="mt-1 text-sm text-gray-400">
+            Buat toko dulu untuk mulai berjualan
+          </p>
+        </div>
         <button
           onClick={() => router.push("/store-panel/settings")}
-          className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition"
+          className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 active:scale-95"
         >
           Buat Toko Sekarang
         </button>
@@ -146,178 +156,209 @@ export default function SellPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto px-4 py-8 md:px-6">
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm md:p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Jual Barang</h1>
-          <p className="text-sm text-gray-500 mb-6">
-            Lengkapi informasi produk agar pembeli lebih mudah menemukan
-            barangmu.
-          </p>
+    <div className="space-y-5">
+      {/* Header */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">
+          Jual Produk
+        </p>
+        <h1 className="mt-1 text-xl font-bold text-gray-900 sm:text-2xl">
+          Tambah Produk
+        </h1>
+        <p className="mt-0.5 text-sm text-gray-400">
+          Lengkapi informasi produk agar mudah ditemukan.
+        </p>
+      </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            {/* IMAGE SLOTS */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Foto Produk{" "}
-                <span className="text-gray-400 font-normal">
-                  ({imageSlots.filter(Boolean).length}/{MAX_SLOTS})
-                </span>
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {Array.from({ length: MAX_SLOTS }).map((_, index) => {
-                  const preview = previews[index];
-                  const isFirst = index === 0;
-                  return (
-                    <div key={index} className="relative">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        ref={(el) => {
-                          fileInputRefs.current[index] = el;
-                        }}
-                        onChange={(e) =>
-                          handleFileChange(index, e.target.files?.[0] ?? null)
-                        }
+      <div className="flex flex-col gap-5">
+        {/* IMAGE SLOTS */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-semibold text-gray-700">
+              Foto Produk
+            </label>
+            <span className="text-xs text-gray-400">
+              {imageSlots.filter(Boolean).length}/{MAX_SLOTS} foto
+            </span>
+          </div>
+
+          <div className="grid grid-cols-4 gap-2">
+            {Array.from({ length: MAX_SLOTS }).map((_, index) => {
+              const preview = previews[index];
+              const isFirst = index === 0;
+              return (
+                <div key={index} className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    ref={(el) => {
+                      fileInputRefs.current[index] = el;
+                    }}
+                    onChange={(e) =>
+                      handleFileChange(index, e.target.files?.[0] ?? null)
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSlotClick(index)}
+                    className={`relative w-full aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-150
+                      ${
+                        preview
+                          ? "border-gray-200 shadow-sm"
+                          : isFirst
+                            ? "border-dashed border-blue-300 bg-blue-50 hover:border-blue-500 hover:bg-blue-50"
+                            : "border-dashed border-gray-200 bg-gray-50 hover:border-gray-300"
+                      }`}
+                  >
+                    {preview ? (
+                      <Image
+                        src={preview}
+                        alt={`Foto ${index + 1}`}
+                        fill
+                        className="object-cover"
                       />
-                      <button
-                        type="button"
-                        onClick={() => handleSlotClick(index)}
-                        className={`relative w-full aspect-square rounded-xl overflow-hidden border-2 transition-all duration-150 ${preview ? "border-gray-900 shadow-sm" : isFirst ? "border-dashed border-gray-400 hover:border-gray-600 bg-gray-50 hover:bg-gray-100" : "border-dashed border-gray-200 hover:border-gray-400 bg-gray-50 hover:bg-gray-100"}`}
-                      >
-                        {preview ? (
-                          <Image
-                            src={preview}
-                            alt={`Foto ${index + 1}`}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="flex flex-col items-center justify-center h-full gap-1">
-                            <svg
-                              className={`w-5 h-5 ${isFirst ? "text-gray-500" : "text-gray-300"}`}
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={1.5}
-                                d="M12 4v16m8-8H4"
-                              />
-                            </svg>
-                            {isFirst && (
-                              <span className="text-[10px] text-gray-400 font-medium">
-                                Utama
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        {preview && (
-                          <span className="absolute top-1 left-1 bg-black/60 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
-                            {index + 1}
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full gap-1">
+                        <ImagePlus
+                          className={`h-5 w-5 ${isFirst ? "text-blue-400" : "text-gray-300"}`}
+                        />
+                        {isFirst && (
+                          <span className="text-[10px] text-blue-400 font-medium">
+                            Utama
                           </span>
                         )}
-                      </button>
-                      {preview && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleRemoveSlot(e, index)}
-                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md transition z-10"
-                        >
-                          <svg
-                            className="w-3 h-3"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2.5}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="text-xs text-gray-400 mt-2">
-                Foto pertama akan jadi foto utama produk. Minimal 1 foto.
-              </p>
-            </div>
+                      </div>
+                    )}
+                    {preview && (
+                      <span className="absolute bottom-1 left-1 bg-black/50 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-md">
+                        {index + 1}
+                      </span>
+                    )}
+                  </button>
+                  {preview && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleRemoveSlot(e, index)}
+                      className="absolute -top-1.5 -right-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow-md transition hover:bg-red-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-xs text-gray-400">
+            <span className="text-red-600 font-bold">BACA!,</span> Foto pertama
+            jadi foto utama. Minimal 1 foto.
+          </p>
+        </div>
 
-            {/* NAMA */}
-            <input
-              className="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-gray-400"
-              placeholder="Nama barang"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+        {/* Nama */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">
+            Nama Produk
+          </label>
+          <input
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+            placeholder="Contoh: Kaos Hitam Polos"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
 
-            {/* HARGA */}
+        {/* Harga */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">Harga</label>
+          <div className="relative">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-400">
+              Rp
+            </span>
             <input
-              className="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-gray-400"
-              placeholder="Harga"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-9 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+              placeholder="0"
               type="number"
               min={0}
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               required
             />
-
-            {/* DESKRIPSI */}
-            <textarea
-              className="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-gray-400 min-h-[120px] resize-none"
-              placeholder="Deskripsi"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-
-            {/* KATEGORI & KONDISI */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <select
-                className="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-gray-400 bg-white"
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-              >
-                {/* ✅ Default "All" — value kosong = null di DB */}
-                <option value="">All</option>
-                {categories
-                  .filter((c) => c.name.toLowerCase() !== "all")
-                  .map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-              </select>
-
-              <select
-                className="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-gray-400 bg-white"
-                value={condition}
-                onChange={(e) => setCondition(e.target.value)}
-              >
-                <option value="buruk">Buruk</option>
-                <option value="baik">Baik</option>
-              </select>
-            </div>
-
-            {/* SUBMIT */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="mt-2 w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? "Mengupload..." : "Publish Product"}
-            </button>
-          </form>
+          </div>
         </div>
+
+        {/* Deskripsi */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">
+            Deskripsi
+          </label>
+          <textarea
+            className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+            placeholder="Ceritakan kondisi, ukuran, atau detail lain."
+            rows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+
+        {/* Kategori & Kondisi */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-gray-700">
+              Kategori Gender (opsional)
+            </label>
+            <select
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+            >
+              <option value="">All</option>
+              {categories
+                .filter((c) => c.name.toLowerCase() !== "all")
+                .map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-gray-700">
+              Kondisi
+            </label>
+            <select
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+              value={condition}
+              onChange={(e) => setCondition(e.target.value)}
+            >
+              <option value="baik">Baik</option>
+              <option value="buruk">Buruk</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Submit */}
+        <button
+          type="button"
+          onClick={handleSubmit as unknown as React.MouseEventHandler}
+          disabled={isSubmitting}
+          className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gray-900 px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isSubmitting ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Mengupload...
+            </>
+          ) : (
+            <>
+              <PlusCircle className="h-4 w-4" />
+              Publish Produk
+            </>
+          )}
+        </button>
       </div>
-    </main>
+    </div>
   );
 }

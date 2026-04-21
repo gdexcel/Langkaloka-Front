@@ -1,10 +1,11 @@
-//langkaloka-v1\app\store-panel\settings\page.tsx
+// langkaloka-v1\app\store-panel\settings\page.tsx
 "use client";
 
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Camera, MapPin, Store, CreditCard, CheckCircle2 } from "lucide-react";
 
 interface MeData {
   id: string;
@@ -68,15 +69,14 @@ export default function StoreSettingsPage() {
     });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       const file = e.target.files[0];
       setImage(file);
       setPreview(URL.createObjectURL(file));
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleUpdate = async (e: any) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
@@ -102,82 +102,59 @@ export default function StoreSettingsPage() {
   const currentImage = preview || me?.image || null;
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
-      {/* Page Title */}
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-800">
-          {hasStore ? "Perbarui Toko" : "Buat Toko Baru"}
+    <div className="space-y-5">
+      {/* Header */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">
+          Pengaturan
+        </p>
+        <h1 className="mt-1 text-xl font-bold text-gray-900 sm:text-2xl">
+          {hasStore ? "Pengaturan Toko" : "Buat Toko Baru"}
         </h1>
-        <p className="text-sm text-gray-400 mt-0.5">
+        <p className="mt-0.5 text-sm text-gray-400">
           {hasStore
-            ? "Edit informasi toko preloved kamu"
-            : "Isi data di bawah untuk mulai berjualan"}
+            ? "Perbarui informasi dan tampilan toko kamu."
+            : "Isi data di bawah untuk mulai berjualan."}
         </p>
       </div>
 
       <form onSubmit={handleUpdate} className="flex flex-col gap-5">
         {/* Photo Upload */}
-        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+        <div className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors flex-shrink-0 group bg-white"
+            className="group relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border-2 border-dashed border-gray-300 bg-white transition-colors hover:border-blue-400"
           >
             {currentImage ? (
-              <Image
-                src={currentImage}
-                alt="Store"
-                fill
-                className="object-cover"
-                unoptimized
-              />
+              <>
+                <Image
+                  src={currentImage}
+                  alt="Store"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                  <Camera className="h-4 w-4 text-white" />
+                </div>
+              </>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-gray-300 group-hover:text-blue-400 transition-colors">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M13.5 12h.008v.008H13.5V12zm4.5-6H6a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 006 20.25h12A2.25 2.25 0 0020.25 18V8.25A2.25 2.25 0 0018 6z"
-                  />
-                </svg>
-              </div>
-            )}
-            {currentImage && (
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z"
-                  />
-                </svg>
+              <div className="flex h-full flex-col items-center justify-center text-gray-300 transition-colors group-hover:text-blue-400">
+                <Camera className="h-5 w-5" />
               </div>
             )}
           </button>
 
           <div>
-            <p className="text-sm font-medium text-gray-700">
-              {currentImage ? "Foto toko dipilih" : "Foto Toko"}
+            <p className="text-sm font-semibold text-gray-700">
+              {currentImage ? "Foto dipilih" : "Foto Toko"}
             </p>
-            <p className="text-xs text-gray-400 mt-0.5">
-              JPG, PNG, WebP. Maks 5MB.
-            </p>
+            <p className="text-xs text-gray-400">JPG, PNG, WebP. Maks 5MB.</p>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="mt-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700"
+              className="mt-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
             >
               {currentImage ? "Ganti foto →" : "Pilih foto →"}
             </button>
@@ -194,105 +171,87 @@ export default function StoreSettingsPage() {
 
         {/* Nama Toko */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold text-gray-500">
+          <label className="text-sm font-semibold text-gray-700">
             Nama Toko <span className="text-red-400">*</span>
           </label>
           <div className="relative">
-            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13.5 21v-7.5A.75.75 0 0114.25 12h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.004 3.004 0 01-.621-4.72l1.189-1.19A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72"
-                />
-              </svg>
-            </div>
+            <Store className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               required
-              className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Contoh: Preloved Sandro"
+              placeholder="Nama Toko"
             />
           </div>
         </div>
 
         {/* Deskripsi */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold text-gray-500">
+          <label className="text-sm font-semibold text-gray-700">
             Deskripsi
           </label>
           <textarea
             rows={3}
-            className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all resize-none"
+            className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Ceritakan sedikit tentang toko kamu..."
+            placeholder="Tentang toko kamu..."
           />
         </div>
 
         {/* Lokasi */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold text-gray-500">Lokasi</label>
+          <label className="text-sm font-semibold text-gray-700">Lokasi</label>
           <div className="relative">
-            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
-                />
-              </svg>
-            </div>
+            <MapPin className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
-              className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Contoh: Bandung, Jawa Barat"
+              placeholder="Contoh: Bekasi"
             />
           </div>
         </div>
 
-        {/* 💳 VA SECTION */}
-        <div className="p-4 border rounded-2xl bg-gray-50">
-          <p className="text-sm font-semibold mb-3">💳 Virtual Account</p>
+        {/* Virtual Account */}
+        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <CreditCard className="h-4 w-4 text-gray-500" />
+            <p className="text-sm font-semibold text-gray-700">
+              Virtual Account / Rekening
+            </p>
+          </div>
 
-          <div className="flex flex-col gap-3">
-            <select
-              className="border p-3 rounded-xl"
-              value={vaBank}
-              onChange={(e) => setVaBank(e.target.value)}
-            >
-              <option value="">Pilih Bank</option>
-              <option value="BCA">BCA</option>
-              <option value="BRI">BRI</option>
-              <option value="BNI">BNI</option>
-              <option value="MANDIRI">Mandiri</option>
-            </select>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-gray-500">
+                Bank
+              </label>
+              <select
+                className="w-full rounded-xl border border-gray-200 bg-white p-3 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                value={vaBank}
+                onChange={(e) => setVaBank(e.target.value)}
+              >
+                <option value="">Pilih Bank</option>
+                <option value="BCA">BCA</option>
+                <option value="BRI">BRI</option>
+                <option value="BNI">BNI</option>
+                <option value="MANDIRI">Mandiri</option>
+              </select>
+            </div>
 
-            <input
-              className="border p-3 rounded-xl"
-              value={vaNumber}
-              onChange={(e) => setVaNumber(e.target.value)}
-              placeholder="Nomor VA"
-            />
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-gray-500">
+                Nomor VA/Rekening
+              </label>
+              <input
+                className="w-full rounded-xl border border-gray-200 bg-white p-3 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                value={vaNumber}
+                onChange={(e) => setVaNumber(e.target.value)}
+                placeholder="Nomor Virtual Account/Rekening"
+              />
+            </div>
           </div>
         </div>
 
@@ -300,33 +259,21 @@ export default function StoreSettingsPage() {
         <button
           type="submit"
           disabled={loading || success}
-          className="w-full py-3.5 rounded-xl font-semibold text-white text-sm transition-opacity disabled:opacity-70"
-          style={{
-            background: success
-              ? "linear-gradient(135deg, #10b981, #059669)"
-              : "linear-gradient(135deg, #3b82f6 0%, #6366f1 60%, #7c3aed 100%)",
-          }}
+          className={`w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all active:scale-95 disabled:opacity-70
+            ${
+              success
+                ? "bg-emerald-500"
+                : "bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700"
+            }`}
         >
           {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <span className="inline-flex items-center justify-center gap-2">
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
               Menyimpan...
             </span>
           ) : success ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.5}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4.5 12.75l6 6 9-13.5"
-                />
-              </svg>
+            <span className="inline-flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-4 w-4" />
               Tersimpan! Mengalihkan...
             </span>
           ) : hasStore ? (
