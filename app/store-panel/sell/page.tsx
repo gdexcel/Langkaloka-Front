@@ -1,11 +1,11 @@
 // langkaloka-v1\app\store-panel\sell\page.tsx
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Store, PlusCircle, ImagePlus, X } from "lucide-react";
+import { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { Store, PlusCircle, ImagePlus, X } from 'lucide-react';
 
 type Category = {
   id: string;
@@ -17,10 +17,10 @@ const MAX_SLOTS = 4;
 export default function SellPage() {
   const router = useRouter();
 
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
-  const [description, setDescription] = useState("");
-  const [condition, setCondition] = useState("baik");
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState('');
+  const [description, setDescription] = useState('');
+  const [condition, setCondition] = useState('baik');
   const [imageSlots, setImageSlots] = useState<(File | null)[]>(
     Array(MAX_SLOTS).fill(null),
   );
@@ -29,7 +29,7 @@ export default function SellPage() {
   );
   const [hasStore, setHasStore] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [categoryId, setCategoryId] = useState("");
+  const [categoryId, setCategoryId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>(
@@ -38,14 +38,14 @@ export default function SellPage() {
 
   useEffect(() => {
     const checkStoreAndCategories = async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
       if (!token) return;
       try {
         const [storeRes, categoriesRes] = await Promise.all([
-          axios.get("/api/stores/me", {
+          axios.get('/api/stores/me', {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("/api/categories"),
+          axios.get('/api/categories'),
         ]);
         if (!storeRes.data) {
           setHasStore(false);
@@ -85,18 +85,18 @@ export default function SellPage() {
     newPreviews[index] = null;
     setImageSlots(newSlots);
     setPreviews(newPreviews);
-    if (fileInputRefs.current[index]) fileInputRefs.current[index]!.value = "";
+    if (fileInputRefs.current[index]) fileInputRefs.current[index]!.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (imageSlots.filter(Boolean).length === 0) {
-      alert("Minimal 1 foto harus diisi!");
+      alert('Minimal 1 foto harus diisi!');
       return;
     }
     setIsSubmitting(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
       const imageUrls: string[] = [];
       for (const file of imageSlots) {
         if (!file) continue;
@@ -105,11 +105,11 @@ export default function SellPage() {
           reader.onloadend = () => resolve(reader.result as string);
           reader.readAsDataURL(file);
         });
-        const uploadRes = await axios.post("/api/upload", { image: base64 });
+        const uploadRes = await axios.post('/api/upload', { image: base64 });
         imageUrls.push(uploadRes.data.url as string);
       }
       await axios.post(
-        "/api/products/create",
+        '/api/products/create',
         {
           name,
           description,
@@ -120,11 +120,11 @@ export default function SellPage() {
         },
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      alert("Produk berhasil dipublikasikan!");
-      router.push("/");
+      alert('Produk berhasil dipublikasikan!');
+      router.push('/');
     } catch (error) {
       console.error(error);
-      alert("Gagal membuat produk. Coba lagi.");
+      alert('Gagal membuat produk. Coba lagi.');
     } finally {
       setIsSubmitting(false);
     }
@@ -146,7 +146,7 @@ export default function SellPage() {
           </p>
         </div>
         <button
-          onClick={() => router.push("/store-panel/settings")}
+          onClick={() => router.push('/store-panel/settings')}
           className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 active:scale-95"
         >
           Buat Toko Sekarang
@@ -205,10 +205,10 @@ export default function SellPage() {
                     className={`relative w-full aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-150
                       ${
                         preview
-                          ? "border-gray-200 shadow-sm"
+                          ? 'border-gray-200 shadow-sm'
                           : isFirst
-                            ? "border-dashed border-blue-300 bg-blue-50 hover:border-blue-500 hover:bg-blue-50"
-                            : "border-dashed border-gray-200 bg-gray-50 hover:border-gray-300"
+                            ? 'border-dashed border-blue-300 bg-blue-50 hover:border-blue-500 hover:bg-blue-50'
+                            : 'border-dashed border-gray-200 bg-gray-50 hover:border-gray-300'
                       }`}
                   >
                     {preview ? (
@@ -221,7 +221,7 @@ export default function SellPage() {
                     ) : (
                       <div className="flex flex-col items-center justify-center h-full gap-1">
                         <ImagePlus
-                          className={`h-5 w-5 ${isFirst ? "text-blue-400" : "text-gray-300"}`}
+                          className={`h-5 w-5 ${isFirst ? 'text-blue-400' : 'text-gray-300'}`}
                         />
                         {isFirst && (
                           <span className="text-[10px] text-blue-400 font-medium">
@@ -315,7 +315,7 @@ export default function SellPage() {
             >
               <option value="">All</option>
               {categories
-                .filter((c) => c.name.toLowerCase() !== "all")
+                .filter((c) => c.name.toLowerCase() !== 'all')
                 .map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}

@@ -1,13 +1,13 @@
 //langkaloka-v1\app\product\[id]\page.tsx
-"use client";
+'use client';
 
-import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { useFavorites } from "@/hooks/useFavorites";
-import { useParams, useRouter } from "next/navigation";
-import { useProduct } from "@/hooks/useProduct";
-import { Header } from "@/components/views/Header";
-import Link from "next/link";
-import axios from "axios";
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useParams, useRouter } from 'next/navigation';
+import { useProduct } from '@/hooks/useProduct';
+import { Header } from '@/components/views/Header';
+import Link from 'next/link';
+import axios from 'axios';
 import {
   MapPin,
   Store,
@@ -16,9 +16,10 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
-} from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+  X,
+} from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 
 type Product = {
   id: string;
@@ -51,15 +52,16 @@ export default function ProductDetailPage() {
   const { data: user } = useCurrentUser();
   const { data: favorites = [] } = useFavorites();
   const isOwner = user && product ? user.id === product.storeOwnerId : false;
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   const isAuthenticated = !!token;
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const isFavorite =
     product && favorites.some((fav: any) => fav.productId === product.id);
   useEffect(() => {
     const checkUpload = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem('token');
         if (!token) return;
 
         const res = await axios.get(`/api/transactions/me?productId=${id}`, {
@@ -96,8 +98,8 @@ export default function ProductDetailPage() {
     e.preventDefault();
     if (!isAuthenticated || isSubmitting) return;
     setIsSubmitting(true);
-    const url = isFavorite ? `/api/favorites/${id}` : "/api/favorites";
-    const method = isFavorite ? "DELETE" : "POST";
+    const url = isFavorite ? `/api/favorites/${id}` : '/api/favorites';
+    const method = isFavorite ? 'DELETE' : 'POST';
     try {
       await axios({
         method,
@@ -105,9 +107,9 @@ export default function ProductDetailPage() {
         data: !isFavorite ? { productId: id } : undefined,
         headers: { Authorization: `Bearer ${token}` },
       });
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
     } catch (error) {
-      console.error("Toggle favorite error", error);
+      console.error('Toggle favorite error', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -136,9 +138,9 @@ export default function ProductDetailPage() {
   }
 
   const markAsSoldorUnsold = async (value: boolean) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (!token) {
-      alert("Login dulu");
+      alert('Login dulu');
       return;
     }
     try {
@@ -149,8 +151,8 @@ export default function ProductDetailPage() {
       );
       alert(
         value
-          ? "Produk berhasil ditandai SOLD"
-          : "Batalkan Tandai Terjual berhasil",
+          ? 'Produk berhasil ditandai SOLD'
+          : 'Batalkan Tandai Terjual berhasil',
       );
       router.refresh();
     } catch (error) {
@@ -159,14 +161,14 @@ export default function ProductDetailPage() {
   };
 
   const handleChat = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (!token) {
-      alert("Login dulu");
+      alert('Login dulu');
       return;
     }
     try {
       const res = await axios.post(
-        "/api/chat/create",
+        '/api/chat/create',
         { productId: id },
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -179,12 +181,12 @@ export default function ProductDetailPage() {
   // 🔥 HANDLE UPLOAD
   const handleUpload = async () => {
     if (!file) {
-      alert("Pilih gambar dulu");
+      alert('Pilih gambar dulu');
       return;
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
 
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -194,7 +196,7 @@ export default function ProductDetailPage() {
       });
 
       // upload ke cloudinary
-      const uploadRes = await axios.post("/api/upload", {
+      const uploadRes = await axios.post('/api/upload', {
         image: base64,
       });
 
@@ -202,7 +204,7 @@ export default function ProductDetailPage() {
 
       // simpan ke backend
       await axios.post(
-        "/api/transactions",
+        '/api/transactions',
         {
           productId: id,
           proof: url,
@@ -214,7 +216,7 @@ export default function ProductDetailPage() {
         },
       );
 
-      alert("Bukti transfer berhasil dikirim!");
+      alert('Bukti transfer berhasil dikirim!');
       setShowUpload(false);
       setFile(null);
     } catch (error) {
@@ -231,12 +233,14 @@ export default function ProductDetailPage() {
           {/* === FOTO SECTION === */}
           <section className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm md:p-4">
             {/* Main image */}
+            {/* Main image */}
             <div className="relative overflow-hidden rounded-xl bg-gray-100">
               {imageList.length > 0 ? (
                 <img
                   src={imageList[activeIndex]}
                   alt={product.name}
-                  className="aspect-square w-full object-cover transition-all duration-300"
+                  onClick={() => setIsLightboxOpen(true)}
+                  className="aspect-square w-full cursor-zoom-in object-cover transition-all duration-300"
                 />
               ) : (
                 <div className="flex aspect-square items-center justify-center text-sm text-gray-400">
@@ -257,8 +261,8 @@ export default function ProductDetailPage() {
                 disabled={!isAuthenticated || isSubmitting}
                 title={
                   !isAuthenticated
-                    ? "Login untuk menambahkan ke wishlist"
-                    : "Toggle wishlist"
+                    ? 'Login untuk menambahkan ke wishlist'
+                    : 'Toggle wishlist'
                 }
                 className="absolute right-3 top-3 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg border backdrop-blur-sm hover:bg-white hover:scale-105 transition-all text-gray-600 hover:text-rose-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -266,12 +270,12 @@ export default function ProductDetailPage() {
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <Heart
-                    className={`h-5 w-5 ${isFavorite ? "fill-rose-500 text-rose-500" : ""}`}
+                    className={`h-5 w-5 ${isFavorite ? 'fill-rose-500 text-rose-500' : ''}`}
                   />
                 )}
               </button>
 
-              {/* Prev / Next — tampil kalau lebih dari 1 foto */}
+              {/* Prev / Next */}
               {imageList.length > 1 && (
                 <>
                   <button
@@ -280,6 +284,7 @@ export default function ProductDetailPage() {
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
+
                   <button
                     onClick={handleNext}
                     className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60 transition"
@@ -287,16 +292,15 @@ export default function ProductDetailPage() {
                     <ChevronRight className="h-4 w-4" />
                   </button>
 
-                  {/* Dot indicator */}
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
                     {imageList.map((_, i) => (
                       <button
                         key={i}
                         onClick={() => setActiveIndex(i)}
                         className={`h-1.5 rounded-full transition-all ${
                           i === activeIndex
-                            ? "w-4 bg-white"
-                            : "w-1.5 bg-white/50"
+                            ? 'w-4 bg-white'
+                            : 'w-1.5 bg-white/50'
                         }`}
                       />
                     ))}
@@ -314,8 +318,8 @@ export default function ProductDetailPage() {
                     onClick={() => setActiveIndex(i)}
                     className={`overflow-hidden rounded-lg border-2 transition-all ${
                       i === activeIndex
-                        ? "border-gray-900 opacity-100"
-                        : "border-transparent opacity-50 hover:opacity-80"
+                        ? 'border-gray-900 opacity-100'
+                        : 'border-transparent opacity-50 hover:opacity-80'
                     }`}
                   >
                     <img
@@ -351,9 +355,9 @@ export default function ProductDetailPage() {
               </h1>
 
               <p className="mt-3 text-2xl font-bold text-gray-900 md:text-3xl">
-                {new Intl.NumberFormat("id-ID", {
-                  style: "currency",
-                  currency: "IDR",
+                {new Intl.NumberFormat('id-ID', {
+                  style: 'currency',
+                  currency: 'IDR',
                   minimumFractionDigits: 0,
                 }).format(product.price)}
               </p>
@@ -366,11 +370,11 @@ export default function ProductDetailPage() {
               <div className="space-y-2 text-sm text-gray-600">
                 <p className="flex items-center gap-2">
                   <Store className="h-4 w-4 text-gray-400" />
-                  <span>{product.storeName || "Nama toko tidak tersedia"}</span>
+                  <span>{product.storeName || 'Nama toko tidak tersedia'}</span>
                 </p>
                 <p className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-gray-400" />
-                  <span>{product.storeLocation || "Lokasi belum diisi"}</span>
+                  <span>{product.storeLocation || 'Lokasi belum diisi'}</span>
                 </p>
               </div>
               <Link
@@ -386,7 +390,7 @@ export default function ProductDetailPage() {
                 Deskripsi Produk
               </h2>
               <p className="text-sm leading-relaxed text-gray-600">
-                {product.description || "Belum ada deskripsi produk."}
+                {product.description || 'Belum ada deskripsi produk.'}
               </p>
             </div>
 
@@ -403,7 +407,7 @@ export default function ProductDetailPage() {
                   <button
                     onClick={() => {
                       if (alreadyUploaded) {
-                        alert("Kamu sudah mengirimkan bukti pembayaran");
+                        alert('Kamu sudah mengirimkan bukti pembayaran');
                         return;
                       }
                       setShowUpload(true);
@@ -454,7 +458,7 @@ export default function ProductDetailPage() {
                 const f = e.target.files[0];
 
                 if (f.size > 2 * 1024 * 1024) {
-                  alert("Max 2MB");
+                  alert('Max 2MB');
                   return;
                 }
 
@@ -478,6 +482,54 @@ export default function ProductDetailPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {isLightboxOpen && imageList.length > 0 && (
+        <div className="fixed inset-0 z-[999] bg-black/95 flex items-center justify-center">
+          {/* Close */}
+          <button
+            onClick={() => setIsLightboxOpen(false)}
+            className="absolute top-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          {/* Counter */}
+          {imageList.length > 1 && (
+            <div className="absolute top-4 left-4 rounded-full bg-white/10 px-4 py-2 text-sm text-white">
+              {activeIndex + 1} / {imageList.length}
+            </div>
+          )}
+
+          {/* Prev */}
+          {imageList.length > 1 && (
+            <button
+              onClick={handlePrev}
+              className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+          )}
+
+          {/* Image */}
+          <div className="w-full h-full p-4 md:p-10 flex items-center justify-center">
+            <img
+              src={imageList[activeIndex]}
+              alt={product.name}
+              className="max-h-full max-w-full object-contain select-none"
+            />
+          </div>
+
+          {/* Next */}
+          {imageList.length > 1 && (
+            <button
+              onClick={handleNext}
+              className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          )}
         </div>
       )}
     </main>
