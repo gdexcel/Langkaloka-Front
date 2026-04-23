@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { Header } from '@/components/views/Header';
-import { useProducts } from '@/hooks/useProducts';
-import { useStores } from '@/hooks/useStores';
-import ProductCard from '@/components/products/ProductCard';
-import StoreCard from '@/components/store/StoreCard';
-import BannerSlider from '@/components/banner/BannerSlider';
-import { useMemo, useRef, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Header } from "@/components/views/Header";
+import { useProducts } from "@/hooks/useProducts";
+import { useStores } from "@/hooks/useStores";
+import ProductCard from "@/components/products/ProductCard";
+import StoreCard from "@/components/store/StoreCard";
+import BannerSlider from "@/components/banner/BannerSlider";
+import { useMemo, useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 // ─── Gender Buttons ───────────────────────────────────────────
 function GenderButtons() {
@@ -17,7 +17,7 @@ function GenderButtons() {
     <div className="grid grid-cols-2 gap-3">
       {/* Wanita */}
       <button
-        onClick={() => router.push('/product/all/women')}
+        onClick={() => router.push("/product/all/women")}
         className="cursor-pointer relative overflow-hidden rounded-2xl bg-gradient-to-br from-pink-400 to-rose-500 p-4 md:p-6 text-white shadow-sm active:scale-[0.97] transition-transform duration-150 text-left"
       >
         <svg
@@ -67,7 +67,7 @@ function GenderButtons() {
 
       {/* Pria */}
       <button
-        onClick={() => router.push('/product/all/men')}
+        onClick={() => router.push("/product/all/men")}
         className="cursor-pointer relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 p-4 md:p-6 text-white shadow-sm active:scale-[0.97] transition-transform duration-150 text-left"
       >
         <svg
@@ -166,15 +166,15 @@ function StoreSlider({
   useEffect(() => {
     const update = () => setCols(window.innerWidth < 640 ? 3 : 5);
     update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, []);
 
   useEffect(() => setPage(0), [cols]);
 
   const totalPages = Math.ceil(stores.length / cols);
   const visibleStores = stores.slice(page * cols, page * cols + cols);
-  const gridColsClass = cols === 3 ? 'grid-cols-3' : 'grid-cols-5';
+  const gridColsClass = cols === 3 ? "grid-cols-3" : "grid-cols-5";
 
   return (
     <section className="bg-white rounded-2xl border border-gray-200 p-3 md:p-5">
@@ -235,7 +235,7 @@ function StoreSlider({
           <div
             ref={mobileTrackRef}
             className="flex sm:hidden gap-3 overflow-x-auto pb-1"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {stores.slice(0, 24).map((store: any) => (
               <div

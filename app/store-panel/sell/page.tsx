@@ -1,11 +1,12 @@
 // langkaloka-v1\app\store-panel\sell\page.tsx
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { Store, PlusCircle, ImagePlus, X } from 'lucide-react';
+import { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Store, PlusCircle, ImagePlus, X } from "lucide-react";
+import { InfoPopup } from "@/components/popup/InformasiPopupProductSeller";
 
 type Category = {
   id: string;
@@ -17,10 +18,10 @@ const MAX_SLOTS = 4;
 export default function SellPage() {
   const router = useRouter();
 
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [description, setDescription] = useState('');
-  const [condition, setCondition] = useState('baik');
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [description, setDescription] = useState("");
+  const [condition, setCondition] = useState("baik");
   const [imageSlots, setImageSlots] = useState<(File | null)[]>(
     Array(MAX_SLOTS).fill(null),
   );
@@ -29,7 +30,7 @@ export default function SellPage() {
   );
   const [hasStore, setHasStore] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [categoryId, setCategoryId] = useState('');
+  const [categoryId, setCategoryId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>(
@@ -38,14 +39,14 @@ export default function SellPage() {
 
   useEffect(() => {
     const checkStoreAndCategories = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) return;
       try {
         const [storeRes, categoriesRes] = await Promise.all([
-          axios.get('/api/stores/me', {
+          axios.get("/api/stores/me", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get('/api/categories'),
+          axios.get("/api/categories"),
         ]);
         if (!storeRes.data) {
           setHasStore(false);
@@ -85,18 +86,18 @@ export default function SellPage() {
     newPreviews[index] = null;
     setImageSlots(newSlots);
     setPreviews(newPreviews);
-    if (fileInputRefs.current[index]) fileInputRefs.current[index]!.value = '';
+    if (fileInputRefs.current[index]) fileInputRefs.current[index]!.value = "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (imageSlots.filter(Boolean).length === 0) {
-      alert('Minimal 1 foto harus diisi!');
+      alert("Minimal 1 foto harus diisi!");
       return;
     }
     setIsSubmitting(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const imageUrls: string[] = [];
       for (const file of imageSlots) {
         if (!file) continue;
@@ -105,11 +106,11 @@ export default function SellPage() {
           reader.onloadend = () => resolve(reader.result as string);
           reader.readAsDataURL(file);
         });
-        const uploadRes = await axios.post('/api/upload', { image: base64 });
+        const uploadRes = await axios.post("/api/upload", { image: base64 });
         imageUrls.push(uploadRes.data.url as string);
       }
       await axios.post(
-        '/api/products/create',
+        "/api/products/create",
         {
           name,
           description,
@@ -120,11 +121,11 @@ export default function SellPage() {
         },
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      alert('Produk berhasil dipublikasikan!');
-      router.push('/');
+      alert("Produk berhasil dipublikasikan!");
+      router.push("/");
     } catch (error) {
       console.error(error);
-      alert('Gagal membuat produk. Coba lagi.');
+      alert("Gagal membuat produk. Coba lagi.");
     } finally {
       setIsSubmitting(false);
     }
@@ -146,7 +147,7 @@ export default function SellPage() {
           </p>
         </div>
         <button
-          onClick={() => router.push('/store-panel/settings')}
+          onClick={() => router.push("/store-panel/settings")}
           className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 active:scale-95"
         >
           Buat Toko Sekarang
@@ -174,9 +175,13 @@ export default function SellPage() {
         {/* IMAGE SLOTS */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-semibold text-gray-700">
-              Foto Produk
-            </label>
+            <div className="space-x-2">
+              <label className="text-sm font-semibold text-gray-700">
+                Foto Produk
+              </label>
+              <InfoPopup field="fotoProduk" />
+            </div>
+
             <span className="text-xs text-gray-400">
               {imageSlots.filter(Boolean).length}/{MAX_SLOTS} foto
             </span>
@@ -205,10 +210,10 @@ export default function SellPage() {
                     className={`relative w-full aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-150
                       ${
                         preview
-                          ? 'border-gray-200 shadow-sm'
+                          ? "border-gray-200 shadow-sm"
                           : isFirst
-                            ? 'border-dashed border-blue-300 bg-blue-50 hover:border-blue-500 hover:bg-blue-50'
-                            : 'border-dashed border-gray-200 bg-gray-50 hover:border-gray-300'
+                            ? "border-dashed border-blue-300 bg-blue-50 hover:border-blue-500 hover:bg-blue-50"
+                            : "border-dashed border-gray-200 bg-gray-50 hover:border-gray-300"
                       }`}
                   >
                     {preview ? (
@@ -221,7 +226,7 @@ export default function SellPage() {
                     ) : (
                       <div className="flex flex-col items-center justify-center h-full gap-1">
                         <ImagePlus
-                          className={`h-5 w-5 ${isFirst ? 'text-blue-400' : 'text-gray-300'}`}
+                          className={`h-5 w-5 ${isFirst ? "text-blue-400" : "text-gray-300"}`}
                         />
                         {isFirst && (
                           <span className="text-[10px] text-blue-400 font-medium">
@@ -257,9 +262,12 @@ export default function SellPage() {
 
         {/* Nama */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-gray-700">
-            Nama Produk
-          </label>
+          <div className="space-x-2">
+            <label className="text-sm font-semibold text-gray-700">
+              Nama Produk
+            </label>
+            <InfoPopup field="namaProduk" />
+          </div>
           <input
             className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
             placeholder="Contoh: Kaos Hitam Polos"
@@ -271,7 +279,10 @@ export default function SellPage() {
 
         {/* Harga */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-gray-700">Harga</label>
+          <div className="space-x-2">
+            <label className="text-sm font-semibold text-gray-700">Harga</label>
+            <InfoPopup field="harga" />
+          </div>
           <div className="relative">
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-400">
               Rp
@@ -290,9 +301,12 @@ export default function SellPage() {
 
         {/* Deskripsi */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-gray-700">
-            Deskripsi
-          </label>
+          <div className="space-x-2">
+            <label className="text-sm font-semibold text-gray-700">
+              Deskripsi
+            </label>
+            <InfoPopup field="deskripsi" />
+          </div>
           <textarea
             className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
             placeholder="Ceritakan kondisi, ukuran, atau detail lain."
@@ -302,12 +316,15 @@ export default function SellPage() {
           />
         </div>
 
-        {/* Kategori & Kondisi */}
+        {/* Kategori */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-gray-700">
-              Kategori Gender (opsional)
-            </label>
+            <div className="space-x-2">
+              <label className="text-sm font-semibold text-gray-700">
+                Kategori Gender
+              </label>
+              <InfoPopup field="kategori" />
+            </div>
             <select
               className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
               value={categoryId}
@@ -315,7 +332,7 @@ export default function SellPage() {
             >
               <option value="">All</option>
               {categories
-                .filter((c) => c.name.toLowerCase() !== 'all')
+                .filter((c) => c.name.toLowerCase() !== "all")
                 .map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -324,17 +341,21 @@ export default function SellPage() {
             </select>
           </div>
 
+          {/* Kondisi */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-gray-700">
-              Kondisi
-            </label>
+            <div className="space-x-2">
+              <label className="text-sm font-semibold text-gray-700">
+                Kondisi
+              </label>
+              <InfoPopup field="kondisi" />
+            </div>
             <select
               className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
               value={condition}
               onChange={(e) => setCondition(e.target.value)}
             >
               <option value="baik">Baik</option>
-              <option value="buruk">Buruk</option>
+              <option value="minus">Minus</option>
             </select>
           </div>
         </div>

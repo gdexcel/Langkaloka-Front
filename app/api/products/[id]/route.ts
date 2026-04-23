@@ -27,6 +27,7 @@ export async function GET(
         storeName: stores.name,
         storeLocation: stores.location,
         storeOwnerId: stores.ownerId,
+        storeImage: stores.image,
       })
       .from(products)
       .leftJoin(stores, eq(products.storeId, stores.id))

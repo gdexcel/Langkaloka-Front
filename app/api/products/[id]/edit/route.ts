@@ -1,3 +1,4 @@
+//langkaloka-v1\app\api\products\[id]\edit\route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/client";
 import { products, stores, productImages } from "@/db/schema"; // tambah productImages

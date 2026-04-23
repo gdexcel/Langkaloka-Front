@@ -1,11 +1,12 @@
-"use client"
+//langkaloka-v1\components\views\fragments\LoginForm.tsx
+"use client";
 
-import { useState } from "react"
-import { cn } from "@/lib/utils"
-import { useLogin } from "@/hooks/useLogin"
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { useLogin } from "@/hooks/useLogin";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 import {
   Card,
@@ -13,14 +14,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
+} from "@/components/ui/field";
 
 export function LoginForm({
   className,
@@ -30,55 +31,55 @@ export function LoginForm({
   const [form, setForm] = useState({
     email: "",
     password: "",
-  })
+  });
 
-  const [errors, setErrors] = useState({ email: "", password: "" })
+  const [errors, setErrors] = useState({ email: "", password: "" });
 
   const validate = (currentForm = form) => {
-    const newErrors = { email: "", password: "" }
+    const newErrors = { email: "", password: "" };
 
     if (!currentForm.email) {
-      newErrors.email = "Email wajib diisi"
+      newErrors.email = "Email wajib diisi";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentForm.email)) {
-      newErrors.email = "Format email tidak valid"
+      newErrors.email = "Format email tidak valid";
     }
 
     if (!currentForm.password) {
-      newErrors.password = "Password wajib diisi"
+      newErrors.password = "Password wajib diisi";
     } else if (currentForm.password.length < 8) {
-      newErrors.password = "Password minimal 8 karakter"
+      newErrors.password = "Password minimal 8 karakter";
     } else if (!/[A-Z]/.test(currentForm.password)) {
-      newErrors.password = "Password harus ada huruf kapital"
+      newErrors.password = "Password harus ada huruf kapital";
     } else if (!/[a-z]/.test(currentForm.password)) {
-      newErrors.password = "Password harus ada huruf kecil"
+      newErrors.password = "Password harus ada huruf kecil";
     } else if (!/[!@#$%^&*(),.?\":{}|<>]/.test(currentForm.password)) {
-      newErrors.password = "Password harus ada simbol"
+      newErrors.password = "Password harus ada simbol";
     } else if (!/\d/.test(currentForm.password)) {
-      newErrors.password = "Password harus ada angka"
+      newErrors.password = "Password harus ada angka";
     }
 
-    setErrors(newErrors)
-    return !newErrors.email && !newErrors.password
-  }
+    setErrors(newErrors);
+    return !newErrors.email && !newErrors.password;
+  };
 
   const { mutate, isPending } = useLogin({
     onSuccess,
-  })
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!validate()) return
-    mutate(form)
-  }
+    e.preventDefault();
+    if (!validate()) return;
+    mutate(form);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const updated = { ...form, [e.target.id]: e.target.value }
-    setForm(updated)
-    validate(updated)
-  }
+    const updated = { ...form, [e.target.id]: e.target.value };
+    setForm(updated);
+    validate(updated);
+  };
 
   const isFormValid =
-    Object.values(form).every(Boolean) && !errors.email && !errors.password
+    Object.values(form).every(Boolean) && !errors.email && !errors.password;
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -134,5 +135,5 @@ export function LoginForm({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

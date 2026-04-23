@@ -6,6 +6,7 @@ import axios from "axios";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { PlusCircle, ImagePlus, X } from "lucide-react";
+import { InfoPopup } from "@/components/popup/InformasiPopupProductSeller";
 
 type Category = {
   id: string;
@@ -139,8 +140,9 @@ export default function EditProductPage() {
         }
       }
 
-      await axios.put(
-        `/api/products/${productId}`,
+      //EditSubmit Button
+      await axios.patch(
+        `/api/products/${productId}/edit`,
         {
           name,
           description,
@@ -188,9 +190,12 @@ export default function EditProductPage() {
         {/* IMAGE SLOTS */}
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <label className="text-sm font-semibold text-gray-700">
-              Foto Produk
-            </label>
+            <div className="space-x-2">
+              <label className="text-sm font-semibold text-gray-700">
+                Foto Produk
+              </label>
+              <InfoPopup field="fotoProduk" />
+            </div>
             <span className="text-xs text-gray-400">
               {previews.filter(Boolean).length}/{MAX_SLOTS} foto
             </span>
@@ -271,9 +276,12 @@ export default function EditProductPage() {
 
         {/* Nama */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-gray-700">
-            Nama Barang
-          </label>
+          <div className="space-x-2">
+            <label className="text-sm font-semibold text-gray-700">
+              Nama Produk
+            </label>
+            <InfoPopup field="namaProduk" />
+          </div>
           <input
             className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
             placeholder="Contoh: Kemeja flanel oversized"
@@ -285,7 +293,10 @@ export default function EditProductPage() {
 
         {/* Harga */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-gray-700">Harga</label>
+          <div className="space-x-2">
+            <label className="text-sm font-semibold text-gray-700">harga</label>
+            <InfoPopup field="harga" />
+          </div>
           <div className="relative">
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-400">
               Rp
@@ -304,9 +315,12 @@ export default function EditProductPage() {
 
         {/* Deskripsi */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-gray-700">
-            Deskripsi
-          </label>
+          <div className="space-x-2">
+            <label className="text-sm font-semibold text-gray-700">
+              Deskripsi
+            </label>
+            <InfoPopup field="deskripsi" />
+          </div>
           <textarea
             className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
             placeholder="Ceritakan kondisi, ukuran, atau detail lain..."
@@ -319,9 +333,12 @@ export default function EditProductPage() {
         {/* Kategori & Kondisi */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-gray-700">
-              Kategori Gender (opsional)
-            </label>
+            <div className="space-x-2">
+              <label className="text-sm font-semibold text-gray-700">
+                Kategori gender
+              </label>
+              <InfoPopup field="kategoriGender" />
+            </div>
             <select
               className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
               value={categoryId}
@@ -339,16 +356,19 @@ export default function EditProductPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-gray-700">
-              Kondisi
-            </label>
+            <div className="space-x-2">
+              <label className="text-sm font-semibold text-gray-700">
+                Kondisi
+              </label>
+              <InfoPopup field="kondisi" />
+            </div>
             <select
               className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
               value={condition}
               onChange={(e) => setCondition(e.target.value)}
             >
               <option value="baik">Baik</option>
-              <option value="buruk">Buruk</option>
+              <option value="minus">Minus</option>
             </select>
           </div>
         </div>
