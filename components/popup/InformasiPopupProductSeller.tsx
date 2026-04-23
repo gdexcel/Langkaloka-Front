@@ -1,4 +1,3 @@
-//langkaloka-v1\components\popup\InformasiPopupProductSeller.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -138,27 +137,25 @@ const POPUP_CONTENT: Record<PopupKey, React.ReactNode> = {
 
 export function InfoPopup({ field }: { field: PopupKey }) {
   const [open, setOpen] = useState(false);
-  const popupRef = useRef<HTMLDivElement>(null);
+  // ✅ Fix: pisahkan ref untuk mobile dan desktop
+  const mobilePopupRef = useRef<HTMLDivElement>(null);
+  const desktopPopupRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // ✅ Fix: useEffect untuk detect click/touch di luar popup (mobile & desktop)
   useEffect(() => {
     if (!open) return;
 
     const handleOutsideInteraction = (e: MouseEvent | TouchEvent) => {
       const target = e.target as Node;
-      // Kalau klik/touch bukan di popup dan bukan di tombol trigger → tutup
-      if (
-        popupRef.current &&
-        !popupRef.current.contains(target) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(target)
-      ) {
+      const insideMobile = mobilePopupRef.current?.contains(target) ?? false;
+      const insideDesktop = desktopPopupRef.current?.contains(target) ?? false;
+      const insideButton = buttonRef.current?.contains(target) ?? false;
+
+      if (!insideMobile && !insideDesktop && !insideButton) {
         setOpen(false);
       }
     };
 
-    // Pakai capture phase agar event ter-catch sebelum elemen lain
     document.addEventListener("mousedown", handleOutsideInteraction, true);
     document.addEventListener("touchstart", handleOutsideInteraction, true);
 
@@ -172,7 +169,6 @@ export function InfoPopup({ field }: { field: PopupKey }) {
     };
   }, [open]);
 
-  // Tutup popup saat scroll (UX tambahan untuk mobile)
   useEffect(() => {
     if (!open) return;
     const handleScroll = () => setOpen(false);
@@ -193,18 +189,11 @@ export function InfoPopup({ field }: { field: PopupKey }) {
 
       {open && (
         <>
-          {/* 
-            ✅ Fix: Backdrop sekarang pakai pointer-events hanya untuk
-            menutup popup via useEffect di atas — tidak perlu onClick di sini.
-            Tetap render backdrop transparan untuk visual blocking jika perlu.
-          */}
-
-          {/* Mobile & Tablet: tengah layar */}
+          {/* ✅ Mobile & Tablet: ref mobilePopupRef → konten tampil benar */}
           <div className="fixed inset-0 z-50 flex items-center justify-center px-5 md:hidden">
-            {/* Backdrop mobile — klik luar ditangani useEffect */}
             <div className="absolute inset-0 bg-black/10" />
             <div
-              ref={popupRef}
+              ref={mobilePopupRef}
               className="relative z-10 w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl ring-1 ring-gray-100"
             >
               <div className="relative text-xs leading-relaxed text-gray-600">
@@ -220,9 +209,9 @@ export function InfoPopup({ field }: { field: PopupKey }) {
             </div>
           </div>
 
-          {/* Desktop: di bawah icon */}
+          {/* ✅ Desktop: ref desktopPopupRef */}
           <div
-            ref={popupRef}
+            ref={desktopPopupRef}
             className="absolute left-0 top-6 z-50 hidden w-72 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-gray-100 md:block"
           >
             <div className="absolute -top-1.5 left-1.5 h-3 w-3 rotate-45 rounded-sm bg-white ring-1 ring-gray-100" />

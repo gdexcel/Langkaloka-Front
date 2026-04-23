@@ -98,17 +98,30 @@ export default function SellPage() {
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("token");
-      const imageUrls: string[] = [];
-      for (const file of imageSlots) {
-        if (!file) continue;
+
+      // ✅ FIX: kirim { url, slotIndex } bukan array URL mentah
+      // slotIndex = posisi slot asli di UI (0 = foto utama)
+      // sehingga walau user skip slot tengah, order tetap benar di DB
+      const imagePayload: { url: string; slotIndex: number }[] = [];
+
+      for (let i = 0; i < imageSlots.length; i++) {
+        const file = imageSlots[i];
+        if (!file) continue; // slot kosong, skip
+
         const base64 = await new Promise<string>((resolve) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result as string);
           reader.readAsDataURL(file);
         });
+
         const uploadRes = await axios.post("/api/upload", { image: base64 });
-        imageUrls.push(uploadRes.data.url as string);
+
+        imagePayload.push({
+          url: uploadRes.data.url as string,
+          slotIndex: i, // ← slot index asli, bukan index setelah filter
+        });
       }
+
       await axios.post(
         "/api/products/create",
         {
@@ -117,10 +130,11 @@ export default function SellPage() {
           price: Number(price),
           condition,
           categoryId: categoryId || null,
-          images: imageUrls,
+          images: imagePayload, // ← { url, slotIndex }[]
         },
         { headers: { Authorization: `Bearer ${token}` } },
       );
+
       alert("Produk berhasil dipublikasikan!");
       router.push("/");
     } catch (error) {
@@ -256,7 +270,8 @@ export default function SellPage() {
           </div>
           <p className="mt-2 text-xs text-gray-400">
             <span className="text-red-600 font-bold">BACA!,</span> Foto pertama
-            jadi foto utama. Minimal 1 foto.
+            jadi foto utama. <br />
+            Upload foto sesuai urutan.
           </p>
         </div>
 
@@ -316,14 +331,16 @@ export default function SellPage() {
           />
         </div>
 
-        {/* Kategori */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <div className="space-x-2">
+        {/* Kategori & Kondisi */}
+        {/* ✅ Fix: tambah overflow-visible agar popup tidak ter-clip oleh grid cell */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 overflow-visible">
+          <div className="flex flex-col gap-1.5 overflow-visible">
+            {/* ✅ Fix: ganti space-x-2 → flex items-center gap-1.5 agar InfoPopup inline dengan label */}
+            <div className="flex items-center gap-1.5">
               <label className="text-sm font-semibold text-gray-700">
                 Kategori Gender
               </label>
-              <InfoPopup field="kategori" />
+              <InfoPopup field="kategoriGender" />
             </div>
             <select
               className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
@@ -342,8 +359,8 @@ export default function SellPage() {
           </div>
 
           {/* Kondisi */}
-          <div className="flex flex-col gap-1.5">
-            <div className="space-x-2">
+          <div className="flex flex-col gap-1.5 overflow-visible">
+            <div className="flex items-center gap-1.5">
               <label className="text-sm font-semibold text-gray-700">
                 Kondisi
               </label>

@@ -1,3 +1,4 @@
+//langkaloka-v1\app\product\[id]\page.tsx
 "use client";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -9,6 +10,7 @@ import { useLightbox } from "@/hooks/useLightbox";
 import { Header } from "@/components/views/Header";
 import { LoginForm } from "@/components/views/fragments/LoginForm";
 import ProductCard from "@/components/products/ProductCard";
+import { TutorialPesanProduct } from "@/components/popup/TutorialPesanProduct"; // ← NEW
 import Link from "next/link";
 import axios from "axios";
 import {
@@ -585,6 +587,15 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="rounded-2xl bg-white p-4 shadow-sm">
+              {/* ── [PLACEMENT 1] Desktop: di atas CTA buttons ─────────────────
+                  Diletakkan di sini karena user yang mau transaksi
+                  paling butuh panduan tepat sebelum klik tombol.      */}
+              {!isOwner && !product.isSold && (
+                <div className="mb-3 flex items-center gap-1.5 text-xs text-gray-400">
+                  <TutorialPesanProduct />
+                  <span>Cara pesan</span>
+                </div>
+              )}
               <CTAButtons
                 isOwner={isOwner}
                 isSold={product.isSold}
@@ -633,11 +644,18 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Deskripsi */}
+        {/* ── Deskripsi ──────────────────────────────────────────────────────── */}
+        {/* ── [PLACEMENT 2] Di header "Deskripsi Produk" — muncul di mobile & desktop
+            Paling relevan karena user yang baca deskripsi = user yang sedang
+            mempertimbangkan beli → butuh tahu alur pemesanan.           */}
         <div className="mt-px bg-white px-4 py-4 md:mt-4 md:rounded-2xl md:px-5">
-          <h2 className="mb-2 text-sm font-semibold text-gray-900">
-            Deskripsi Produk
-          </h2>
+          <div className="mb-2 flex items-center gap-1.5">
+            <h2 className="text-sm font-semibold text-gray-900">
+              Deskripsi Produk
+            </h2>
+            {/* Icon ? muncul di semua ukuran layar */}
+            <TutorialPesanProduct />
+          </div>
           <ExpandableDescription
             text={product.description || "Belum ada deskripsi produk."}
           />
@@ -670,7 +688,16 @@ export default function ProductDetailPage() {
       )}
 
       {/* ── STICKY BOTTOM CTA (mobile) ───────────────────────────────────────── */}
+      {/* ── [PLACEMENT 3] Mobile sticky bar: icon di kiri luar tombol
+          Area paling sering dilihat user mobile saat mau transaksi.
+          Hanya tampil kalau bukan owner & produk belum sold.           */}
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-100 bg-white px-4 py-3 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] md:hidden">
+        {!isOwner && !product.isSold && (
+          <div className="mb-2 flex items-center gap-1.5 text-xs text-gray-400">
+            <TutorialPesanProduct />
+            <span>Cara pesan</span>
+          </div>
+        )}
         <CTAButtons
           isOwner={isOwner}
           isSold={product.isSold}

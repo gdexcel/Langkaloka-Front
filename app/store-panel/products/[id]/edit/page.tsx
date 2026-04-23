@@ -110,54 +110,55 @@ export default function EditProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (previews.filter(Boolean).length === 0) {
+    if (imageSlots.filter(Boolean).length === 0) {
       alert("Minimal 1 foto harus diisi!");
       return;
     }
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("token");
-      const imageUrls: string[] = [];
 
-      for (let i = 0; i < MAX_SLOTS; i++) {
+      // ✅ FIX: kirim { url, slotIndex } bukan array URL mentah
+      // slotIndex = posisi slot asli di UI (0 = foto utama)
+      // sehingga walau user skip slot tengah, order tetap benar di DB
+      const imagePayload: { url: string; slotIndex: number }[] = [];
+
+      for (let i = 0; i < imageSlots.length; i++) {
         const file = imageSlots[i];
-        const preview = previews[i];
+        if (!file) continue; // slot kosong, skip
 
-        if (!preview) continue;
+        const base64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
 
-        if (file) {
-          // New file — upload it
-          const base64 = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(file);
-          });
-          const uploadRes = await axios.post("/api/upload", { image: base64 });
-          imageUrls.push(uploadRes.data.url as string);
-        } else {
-          // Existing URL — reuse it
-          imageUrls.push(preview);
-        }
+        const uploadRes = await axios.post("/api/upload", { image: base64 });
+
+        imagePayload.push({
+          url: uploadRes.data.url as string,
+          slotIndex: i, // ← slot index asli, bukan index setelah filter
+        });
       }
 
-      //EditSubmit Button
-      await axios.patch(
-        `/api/products/${productId}/edit`,
+      await axios.post(
+        "/api/products/create",
         {
           name,
           description,
           price: Number(price),
           condition,
           categoryId: categoryId || null,
-          images: imageUrls,
+          images: imagePayload, // ← { url, slotIndex }[]
         },
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      alert("Produk berhasil diperbarui!");
-      router.push(`/product/${productId}`);
+
+      alert("Produk berhasil dipublikasikan!");
+      router.push("/");
     } catch (error) {
       console.error(error);
-      alert("Gagal memperbarui produk. Coba lagi.");
+      alert("Gagal membuat produk. Coba lagi.");
     } finally {
       setIsSubmitting(false);
     }
@@ -270,7 +271,7 @@ export default function EditProductPage() {
           </div>
           <p className="mt-2 text-xs text-gray-400">
             <span className="text-red-600 font-bold">BACA!,</span> Foto pertama
-            jadi foto utama. Minimal 1 foto.
+            jadi foto utama. Upload foto sesuai urutan.
           </p>
         </div>
 

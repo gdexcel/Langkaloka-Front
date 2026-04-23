@@ -1,39 +1,39 @@
-'use client';
+//langkaloka-v1\components\banner\BannerSlider.tsx
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // ─── Banner Data ──────────────────────────────────────────────
 const banners = [
   {
     id: 1,
-    type: 'buyer',
-    src: '/images/banner/1-buyer.jpg',
-    alt: 'Temukan Produk Keren, Harga Hemat – Banner Buyer',
-    cta: 'Mulai Explore',
-    ctaHref: '/product/all',
-    // Accent color for dots / CTA outline (matches banner theme)
-    accent: '#F97316', // orange
+    type: "buyer",
+    src: "/images/banner/1-buyer.jpg",
+    alt: "Temukan Produk Keren, Harga Hemat – Banner Buyer",
+    cta: "Mulai Explore",
+    ctaHref: "#rekomendasi", // scroll ke section rekomendasi produk
+    accent: "#F97316", // orange
   },
   {
     id: 2,
-    type: 'seller',
-    src: '/images/banner/2-seller.jpg',
-    alt: 'Jual Cepat, Untung Dekat – Banner Seller',
-    cta: 'Mulai Jualan',
-    ctaHref: '/sell',
-    accent: '#0D9488', // teal
+    type: "seller",
+    src: "/images/banner/2-seller.jpg",
+    alt: "Jual Cepat, Untung Dekat – Banner Seller",
+    cta: "Mulai Jualan",
+    ctaHref: "/store-panel/sell",
+    accent: "#0D9488", // teal
   },
   {
     id: 3,
-    type: 'pembayaran',
-    src: '/images/banner/3-pembayaran.jpg',
-    alt: 'Chat, Langsung Bayar – Banner Pembayaran',
-    cta: 'Pelajari Lebih Lanjut',
-    ctaHref: '/help/payment',
-    accent: '#9333EA', // purple
+    type: "pembayaran",
+    src: "/images/banner/3-pembayaran.jpg",
+    alt: "Chat, Langsung Bayar – Banner Pembayaran",
+    cta: "Pelajari Lebih Lanjut",
+    ctaHref: "/tutorial/cara-pesan",
+    accent: "#9333EA", // purple
   },
 ];
 
@@ -43,11 +43,11 @@ export default function BannerSlider() {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [direction, setDirection] = useState<'left' | 'right'>('right');
+  const [direction, setDirection] = useState<"left" | "right">("right");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const goTo = useCallback(
-    (index: number, dir: 'left' | 'right' = 'right') => {
+    (index: number, dir: "left" | "right" = "right") => {
       if (isAnimating) return;
       setDirection(dir);
       setIsAnimating(true);
@@ -61,12 +61,12 @@ export default function BannerSlider() {
 
   const prev = useCallback(() => {
     const idx = (current - 1 + banners.length) % banners.length;
-    goTo(idx, 'left');
+    goTo(idx, "left");
   }, [current, goTo]);
 
   const next = useCallback(() => {
     const idx = (current + 1) % banners.length;
-    goTo(idx, 'right');
+    goTo(idx, "right");
   }, [current, goTo]);
 
   // Autoplay
@@ -96,8 +96,17 @@ export default function BannerSlider() {
     resetTimer();
   };
   const handleDot = (i: number) => {
-    goTo(i, i > current ? 'right' : 'left');
+    goTo(i, i > current ? "right" : "left");
     resetTimer();
+  };
+  const handleBannerClick = () => {
+    const href = banners[current].ctaHref;
+    if (href.startsWith("#")) {
+      const el = document.getElementById(href.slice(1));
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      router.push(href);
+    }
   };
 
   const banner = banners[current];
@@ -110,23 +119,27 @@ export default function BannerSlider() {
         - md+: 16/5 (landscape full seperti design aslinya)
         Gambar asli ~1500x500 (3:1), kita kasih sedikit ruang lebih tinggi di mobile
       */}
-      <div className="relative w-full" style={{ aspectRatio: '16/6' }}>
+      <div
+        className="relative w-full cursor-pointer"
+        style={{ aspectRatio: "16/6" }}
+        onClick={handleBannerClick}
+      >
         {banners.map((b, i) => (
           <div
             key={b.id}
             className={`absolute inset-0 transition-all duration-500 ease-in-out ${
               i === current
-                ? 'opacity-100 translate-x-0 z-10'
+                ? "opacity-100 translate-x-0 z-10"
                 : i < current
                   ? `opacity-0 z-0 ${
-                      direction === 'right'
-                        ? '-translate-x-full'
-                        : 'translate-x-full'
+                      direction === "right"
+                        ? "-translate-x-full"
+                        : "translate-x-full"
                     }`
                   : `opacity-0 z-0 ${
-                      direction === 'right'
-                        ? 'translate-x-full'
-                        : '-translate-x-full'
+                      direction === "right"
+                        ? "translate-x-full"
+                        : "-translate-x-full"
                     }`
             }`}
           >
@@ -144,7 +157,10 @@ export default function BannerSlider() {
 
         {/* Nav Arrows — hidden on mobile, visible on hover di desktop */}
         <button
-          onClick={handlePrev}
+          onClick={(e) => {
+            e.stopPropagation();
+            handlePrev();
+          }}
           aria-label="Banner sebelumnya"
           className="cursor-pointer absolute left-3 top-1/2 -translate-y-1/2 z-20
             w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/30 backdrop-blur-sm
@@ -155,7 +171,10 @@ export default function BannerSlider() {
           <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
         </button>
         <button
-          onClick={handleNext}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleNext();
+          }}
           aria-label="Banner berikutnya"
           className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 z-20
             w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/30 backdrop-blur-sm
@@ -171,13 +190,16 @@ export default function BannerSlider() {
           {banners.map((b, i) => (
             <button
               key={b.id}
-              onClick={() => handleDot(i)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDot(i);
+              }}
               aria-label={`Slide ${i + 1}`}
               className="cursor-pointer transition-all duration-300 rounded-full"
               style={{
-                width: i === current ? '20px' : '6px',
-                height: '6px',
-                background: i === current ? b.accent : 'rgba(255,255,255,0.55)',
+                width: i === current ? "20px" : "6px",
+                height: "6px",
+                background: i === current ? b.accent : "rgba(255,255,255,0.55)",
               }}
             />
           ))}
