@@ -506,7 +506,20 @@ export function Header() {
                   className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-gray-700 transition hover:bg-pink-50 hover:text-pink-600 cursor-pointer group"
                 >
                   <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-pink-100 text-pink-500 group-hover:bg-pink-200 transition">
-                    <span className="text-base leading-none">♀</span>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="8" r="5" />
+                      <line x1="12" y1="13" x2="12" y2="21" />
+                      <line x1="9" y1="18" x2="15" y2="18" />
+                    </svg>
                   </div>
                   <span>Wanita</span>
                   <span className="ml-auto text-[11px] text-gray-400">
@@ -523,7 +536,20 @@ export function Header() {
                   className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-gray-700 transition hover:bg-blue-50 hover:text-blue-600 cursor-pointer group"
                 >
                   <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-100 text-blue-500 group-hover:bg-blue-200 transition">
-                    <span className="text-base leading-none">♂</span>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="10" cy="14" r="5" />
+                      <line x1="21" y1="3" x2="15" y2="9" />
+                      <polyline points="16 3 21 3 21 8" />
+                    </svg>
                   </div>
                   <span>Pria</span>
                   <span className="ml-auto text-[11px] text-gray-400">

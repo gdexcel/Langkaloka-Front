@@ -170,10 +170,12 @@ function Bubble({
   msg,
   isMe,
   avatar,
+  storeImage,
 }: {
   msg: any;
   isMe: boolean;
   avatar: string;
+  storeImage: string | null;
 }) {
   const time = msg.createdAt
     ? new Date(msg.createdAt).toLocaleTimeString("id-ID", {
@@ -186,8 +188,16 @@ function Bubble({
     <div className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : ""}`}>
       {/* Avatar lawan */}
       {!isMe && (
-        <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold flex items-center justify-center shrink-0 mb-5">
-          {avatar}
+        <div className="w-7 h-7 rounded-full overflow-hidden bg-blue-50 text-blue-600 text-[10px] font-bold flex items-center justify-center shrink-0 mb-5">
+          {storeImage ? ( // ← ganti ini
+            <img
+              src={storeImage}
+              alt={avatar}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            avatar
+          )}
         </div>
       )}
 
@@ -574,6 +584,7 @@ export default function ChatPage() {
                     msg={msg}
                     isMe={msg.senderId === myId}
                     avatar={initials}
+                    storeImage={storeImage}
                   />
                 </div>
               ))}
