@@ -1,39 +1,23 @@
-//langkaloka-v1\components\views\fragments\LoginForm.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useLogin } from "@/hooks/useLogin";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
 
 export function LoginForm({
   className,
   onSuccess,
+  onSwitchToRegister,
   ...props
-}: React.ComponentProps<"div"> & { onSuccess?: () => void }) {
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
+}: React.ComponentProps<"div"> & {
+  onSuccess?: () => void;
+  onSwitchToRegister?: () => void;
+}) {
+  const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({ email: "", password: "" });
+  const isSubmitting = useRef(false);
 
   const validate = (currentForm = form) => {
     const newErrors = { email: "", password: "" };
@@ -48,14 +32,6 @@ export function LoginForm({
       newErrors.password = "Password wajib diisi";
     } else if (currentForm.password.length < 8) {
       newErrors.password = "Password minimal 8 karakter";
-    } else if (!/[A-Z]/.test(currentForm.password)) {
-      newErrors.password = "Password harus ada huruf kapital";
-    } else if (!/[a-z]/.test(currentForm.password)) {
-      newErrors.password = "Password harus ada huruf kecil";
-    } else if (!/[!@#$%^&*(),.?\":{}|<>]/.test(currentForm.password)) {
-      newErrors.password = "Password harus ada simbol";
-    } else if (!/\d/.test(currentForm.password)) {
-      newErrors.password = "Password harus ada angka";
     }
 
     setErrors(newErrors);
@@ -63,12 +39,20 @@ export function LoginForm({
   };
 
   const { mutate, isPending } = useLogin({
-    onSuccess,
+    onSuccess: () => {
+      isSubmitting.current = false;
+      onSuccess?.();
+    },
+    onError: () => {
+      isSubmitting.current = false;
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting.current || isPending) return;
     if (!validate()) return;
+    isSubmitting.current = true;
     mutate(form);
   };
 
@@ -79,61 +63,65 @@ export function LoginForm({
   };
 
   const isFormValid =
-    Object.values(form).every(Boolean) && !errors.email && !errors.password;
+    !!form.email && !!form.password && !errors.email && !errors.password;
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">Login to your account</CardTitle>
-          <CardDescription>
-            Enter your email and password to login
-          </CardDescription>
-        </CardHeader>
+    <div className={cn("w-full", className)} {...props}>
+      {/* Header */}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        {/* Email */}
+        <div className="flex flex-col gap-1">
+          <label
+            htmlFor="email"
+            className="text-xs font-medium text-foreground/80"
+          >
+            Email
+          </label>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="email@contoh.com"
+            value={form.email}
+            onChange={handleChange}
+            className="h-9 text-sm"
+          />
+          {errors.email && (
+            <p className="text-[11px] text-destructive">{errors.email}</p>
+          )}
+        </div>
 
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="m@example.com"
-                  required
-                  value={form.email}
-                  onChange={handleChange}
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-500">{errors.email}</p>
-                )}
-              </Field>
+        {/* Password */}
+        <div className="flex flex-col gap-1">
+          <label
+            htmlFor="password"
+            className="text-xs font-medium text-foreground/80"
+          >
+            Password
+          </label>
+          <Input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            placeholder="Password kamu"
+            value={form.password}
+            onChange={handleChange}
+            className="h-9 text-sm"
+          />
+          {errors.password && (
+            <p className="text-[11px] text-destructive">{errors.password}</p>
+          )}
+        </div>
 
-              <Field>
-                <FieldLabel htmlFor="password">Password</FieldLabel>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={form.password}
-                  onChange={handleChange}
-                />
-                {errors.password && (
-                  <p className="text-sm text-red-500">{errors.password}</p>
-                )}
-              </Field>
-
-              <Field>
-                <Button type="submit" disabled={isPending || !isFormValid}>
-                  {isPending ? "Logging in..." : "Login"}
-                </Button>
-              </Field>
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
+        {/* Submit */}
+        <Button
+          type="submit"
+          disabled={isPending || !isFormValid || isSubmitting.current}
+          className="mt-1 h-9 w-full text-sm font-medium"
+        >
+          {isPending ? "Masuk..." : "Masuk"}
+        </Button>
+      </form>
     </div>
   );
 }

@@ -60,18 +60,28 @@ export function Header() {
 
   // ── Scroll listener: hide on scroll-down, show on scroll-up ──
   useEffect(() => {
+    const THRESHOLD = 10; // minimum px movement before reacting
+    let ticking = false;
+
     const handleScroll = () => {
-      const currentY = window.scrollY;
-      if (currentY <= 10) {
-        setSearchBarVisible(true);
-      } else if (currentY > lastScrollY.current + 4) {
-        // scrolling down
-        setSearchBarVisible(false);
-      } else if (currentY < lastScrollY.current - 4) {
-        // scrolling up
-        setSearchBarVisible(true);
-      }
-      lastScrollY.current = currentY;
+      if (ticking) return;
+      ticking = true;
+
+      requestAnimationFrame(() => {
+        const currentY = window.scrollY;
+
+        if (currentY <= 10) {
+          setSearchBarVisible(true);
+        } else if (currentY > lastScrollY.current + THRESHOLD) {
+          setSearchBarVisible(false);
+        } else if (currentY < lastScrollY.current - THRESHOLD) {
+          setSearchBarVisible(true);
+        }
+        // delta < THRESHOLD → abaikan, jangan update state sama sekali
+
+        lastScrollY.current = currentY;
+        ticking = false;
+      });
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
