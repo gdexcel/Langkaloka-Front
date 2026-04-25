@@ -9,6 +9,7 @@ import BannerSlider from "@/components/banner/BannerSlider";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import TutorialStories from "@/components/tutorial/TutorialStories";
 
 // ─── Gender Buttons ───────────────────────────────────────────
 function GenderButtons() {
@@ -329,12 +330,7 @@ export default function Home() {
         <BannerSlider />
         <GenderButtons />
 
-        <div>
-          <p>
-            Section Baru Nanti Bikin Cara Menggunakan Langkaloka (jual, beli,
-            rating, dll)
-          </p>
-        </div>
+        <TutorialStories />
 
         <ProductSection
           id="rekomendasi"
