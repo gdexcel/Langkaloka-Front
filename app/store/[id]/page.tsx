@@ -1,16 +1,19 @@
 //langkaloka-v1\app\store\[id]\page.tsx
-'use client';
+"use client";
 
-import { useParams } from 'next/navigation';
-import { useStore } from '@/hooks/useStore';
-import { Header } from '@/components/views/Header';
-import ProductCard from '@/components/products/ProductCard';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams } from "next/navigation";
+import { useStore } from "@/hooks/useStore";
+import { Header } from "@/components/views/Header";
+import ProductCard from "@/components/products/ProductCard";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Lightbox } from "@/components/ui/lightbox";
+import { useLightbox } from "@/hooks/useLightbox";
+import { Fullscreen } from "lucide-react";
 
 function getUserIdFromToken(token: string): string | null {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = JSON.parse(atob(token.split(".")[1]));
     return payload.id ?? payload.sub ?? null;
   } catch {
     return null;
@@ -18,11 +21,11 @@ function getUserIdFromToken(token: string): string | null {
 }
 
 const STAR_LABELS: Record<number, string> = {
-  1: 'Buruk',
-  2: 'Kurang',
-  3: 'Cukup',
-  4: 'Bagus',
-  5: 'Sangat Bagus',
+  1: "Buruk",
+  2: "Kurang",
+  3: "Cukup",
+  4: "Bagus",
+  5: "Sangat Bagus",
 };
 
 export default function StorePage() {
@@ -37,8 +40,19 @@ export default function StorePage() {
   const [hasRated, setHasRated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
-  const [activeTab, setActiveTab] = useState<'products' | 'info'>('products');
+  const [activeTab, setActiveTab] = useState<"products" | "info">("products");
   const [copied, setCopied] = useState(false);
+
+  const storeImage = data?.store?.image ? [data.store.image] : [];
+  const {
+    isOpen: isLightboxOpen,
+    activeIndex,
+    setActiveIndex,
+    open: openLightbox,
+    close: closeLightbox,
+    prev: lbPrev,
+    next: lbNext,
+  } = useLightbox(storeImage);
 
   useEffect(() => {
     if (data?.userRating) {
@@ -49,7 +63,7 @@ export default function StorePage() {
 
   useEffect(() => {
     if (!data?.store?.ownerId) return;
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return;
     const userId = getUserIdFromToken(token);
     setIsOwner(userId === data.store.ownerId);
@@ -77,22 +91,22 @@ export default function StorePage() {
 
   const handleRate = async (star: number) => {
     if (hasRated) {
-      alert('Kamu sudah memberi rating ⭐');
+      alert("Kamu sudah memberi rating ⭐");
       return;
     }
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      alert('Login dulu ya 🔐');
+      alert("Login dulu ya 🔐");
       return;
     }
 
     try {
       setLoading(true);
-      const res = await fetch('/api/store/rate', {
-        method: 'POST',
+      const res = await fetch("/api/store/rate", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ storeId: data.store.id, rating: star }),
@@ -110,7 +124,7 @@ export default function StorePage() {
       alert(`⭐ Terima kasih sudah memberi ${star} bintang!`);
     } catch (error) {
       console.error(error);
-      alert('Gagal rating');
+      alert("Gagal rating");
     } finally {
       setLoading(false);
     }
@@ -136,7 +150,7 @@ export default function StorePage() {
             backgroundImage: `radial-gradient(circle at 20% 50%, #fff 1px, transparent 1px),
               radial-gradient(circle at 80% 20%, #fff 1px, transparent 1px),
               radial-gradient(circle at 50% 80%, #fff 1px, transparent 1px)`,
-            backgroundSize: '40px 40px',
+            backgroundSize: "40px 40px",
           }}
         />
       </div>
@@ -151,8 +165,9 @@ export default function StorePage() {
                 {data.store.image ? (
                   <img
                     src={data.store.image}
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-white shadow-lg"
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-white shadow-lg cursor-pointer"
                     alt={data.store.name}
+                    onClick={() => openLightbox(0)}
                   />
                 ) : (
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#1A3C8F] to-[#4B80F0] rounded-2xl border-4 border-white shadow-lg flex items-center justify-center text-3xl font-black text-white">
@@ -165,7 +180,7 @@ export default function StorePage() {
               <div className="flex-1 flex justify-end pb-1">
                 {isOwner && (
                   <button
-                    onClick={() => router.push('/store-panel/settings')}
+                    onClick={() => router.push("/store-panel/settings")}
                     className="flex items-center gap-1.5 text-xs font-semibold bg-[#2255CC]/10 text-[#2255CC] px-3 py-1.5 rounded-full hover:bg-[#2255CC]/20 transition-colors"
                   >
                     <svg
@@ -201,7 +216,7 @@ export default function StorePage() {
                 </h1>
               </div>
               <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-                {data.store.description || 'Tidak ada deskripsi'}
+                {data.store.description || "Tidak ada deskripsi"}
               </p>
               <div className="flex items-center gap-1.5 mt-2">
                 <svg
@@ -216,7 +231,7 @@ export default function StorePage() {
                   />
                 </svg>
                 <span className="text-xs text-gray-400">
-                  {data.store.location || 'Lokasi belum diisi'}
+                  {data.store.location || "Lokasi belum diisi"}
                 </span>
               </div>
             </div>
@@ -233,7 +248,7 @@ export default function StorePage() {
                     {[1, 2, 3, 4, 5].map((star) => (
                       <svg
                         key={star}
-                        className={`w-3.5 h-3.5 ${star <= Math.round(data.avgRating || 0) ? 'text-[#2255CC]' : 'text-gray-200'}`}
+                        className={`w-3.5 h-3.5 ${star <= Math.round(data.avgRating || 0) ? "text-[#2255CC]" : "text-gray-200"}`}
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -289,7 +304,7 @@ export default function StorePage() {
                       {[1, 2, 3, 4, 5].map((star) => (
                         <svg
                           key={star}
-                          className={`w-5 h-5 ${star <= selectedRating ? 'text-[#2255CC]' : 'text-gray-200'}`}
+                          className={`w-5 h-5 ${star <= selectedRating ? "text-[#2255CC]" : "text-gray-200"}`}
                           fill="currentColor"
                           viewBox="0 0 20 20"
                         >
@@ -318,7 +333,7 @@ export default function StorePage() {
                           title={STAR_LABELS[star]}
                         >
                           <svg
-                            className={`w-6 h-6 transition-all duration-150 group-hover:scale-125 ${star <= displayRating ? 'text-[#2255CC]' : 'text-gray-200'}`}
+                            className={`w-6 h-6 transition-all duration-150 group-hover:scale-125 ${star <= displayRating ? "text-[#2255CC]" : "text-gray-200"}`}
                             fill="currentColor"
                             viewBox="0 0 20 20"
                           >
@@ -342,14 +357,14 @@ export default function StorePage() {
         {/* ── TAB NAV (Mobile) ── */}
         <div className="flex lg:hidden bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
           <button
-            onClick={() => setActiveTab('products')}
-            className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === 'products' ? 'bg-[#2255CC] text-white' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveTab("products")}
+            className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === "products" ? "bg-[#2255CC] text-white" : "text-gray-500 hover:text-gray-700"}`}
           >
             🛍️ Produk
           </button>
           <button
-            onClick={() => setActiveTab('info')}
-            className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === 'info' ? 'bg-[#2255CC] text-white' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveTab("info")}
+            className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === "info" ? "bg-[#2255CC] text-white" : "text-gray-500 hover:text-gray-700"}`}
           >
             💳 Pembayaran
           </button>
@@ -359,7 +374,7 @@ export default function StorePage() {
         <div className="flex gap-5 items-start pb-10">
           {/* Products Panel */}
           <div
-            className={`flex-1 min-w-0 ${activeTab === 'info' ? 'hidden lg:block' : ''}`}
+            className={`flex-1 min-w-0 ${activeTab === "info" ? "hidden lg:block" : ""}`}
           >
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">
@@ -386,7 +401,7 @@ export default function StorePage() {
 
           {/* Payment Info Sidebar */}
           <div
-            className={`lg:w-60 w-full flex-shrink-0 lg:sticky lg:top-6 ${activeTab === 'products' ? 'hidden lg:block' : ''}`}
+            className={`lg:w-60 w-full flex-shrink-0 lg:sticky lg:top-6 ${activeTab === "products" ? "hidden lg:block" : ""}`}
           >
             {/* VA Card */}
             <div className="bg-white rounded-2xl shadow-sm p-5 mb-4">
@@ -396,7 +411,7 @@ export default function StorePage() {
                 </p>
                 {isOwner && (
                   <button
-                    onClick={() => router.push('/store-panel/settings')}
+                    onClick={() => router.push("/store-panel/settings")}
                     className="text-[11px] text-[#2255CC] font-semibold hover:underline"
                   >
                     Edit
@@ -408,7 +423,7 @@ export default function StorePage() {
                 <div>
                   <div className="bg-gradient-to-br from-[#1A3C8F] to-[#4B80F0] rounded-xl p-4 text-white mb-3">
                     <p className="text-[10px] font-semibold opacity-75 uppercase tracking-widest mb-1">
-                      {data.store.vaBank || 'Virtual Account'}
+                      {data.store.vaBank || "Virtual Account"}
                     </p>
                     <p className="text-lg font-black tracking-wider leading-none">
                       {data.store.vaNumber}
@@ -418,8 +433,8 @@ export default function StorePage() {
                     onClick={handleCopyVA}
                     className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 ${
                       copied
-                        ? 'bg-green-500 text-white'
-                        : 'bg-[#2255CC]/10 text-[#2255CC] hover:bg-[#2255CC] hover:text-white'
+                        ? "bg-green-500 text-white"
+                        : "bg-[#2255CC]/10 text-[#2255CC] hover:bg-[#2255CC] hover:text-white"
                     }`}
                   >
                     {copied ? (
@@ -511,6 +526,19 @@ export default function StorePage() {
           </div>
         </div>
       </div>
+
+      {/* Fullscreen Foto Profile */}
+      {isLightboxOpen && storeImage.length > 0 && (
+        <Lightbox
+          images={storeImage}
+          activeIndex={activeIndex}
+          productName={data.store.name}
+          onClose={closeLightbox}
+          onPrev={lbPrev}
+          onNext={lbNext}
+          onSelect={setActiveIndex}
+        />
+      )}
     </main>
   );
 }

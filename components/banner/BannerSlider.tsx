@@ -1,4 +1,4 @@
-//langkaloka-v1\components\banner\BannerSlider.tsx
+// langkaloka-v1/components/banner/BannerSlider.tsx
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-// ─── Banner Data ──────────────────────────────────────────────
 const banners = [
   {
     id: 1,
@@ -14,8 +13,8 @@ const banners = [
     src: "/images/banner/1-buyer.jpg",
     alt: "Temukan Produk Keren, Harga Hemat – Banner Buyer",
     cta: "Mulai Explore",
-    ctaHref: "#rekomendasi", // scroll ke section rekomendasi produk
-    accent: "#F97316", // orange
+    ctaHref: "#rekomendasi",
+    accent: "#F97316",
   },
   {
     id: 2,
@@ -24,7 +23,7 @@ const banners = [
     alt: "Jual Cepat, Untung Dekat – Banner Seller",
     cta: "Mulai Jualan",
     ctaHref: "/store-panel/sell",
-    accent: "#0D9488", // teal
+    accent: "#0D9488",
   },
   {
     id: 3,
@@ -33,11 +32,13 @@ const banners = [
     alt: "Chat, Langsung Bayar – Banner Pembayaran",
     cta: "Pelajari Lebih Lanjut",
     ctaHref: "/tutorial/cara-pesan",
-    accent: "#9333EA", // purple
+    accent: "#9333EA",
   },
 ];
 
 const AUTOPLAY_INTERVAL = 5000;
+// Minimum px drag sebelum dianggap swipe (bukan tap)
+const SWIPE_THRESHOLD = 40;
 
 export default function BannerSlider() {
   const router = useRouter();
@@ -45,6 +46,11 @@ export default function BannerSlider() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState<"left" | "right">("right");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ── Touch tracking ──────────────────────────────────────────
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+  const isSwiping = useRef(false); // true kalau drag melebihi threshold
 
   const goTo = useCallback(
     (index: number, dir: "left" | "right" = "right") => {
@@ -79,7 +85,6 @@ export default function BannerSlider() {
     };
   }, []);
 
-  // Reset timer on manual nav
   const resetTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -99,7 +104,47 @@ export default function BannerSlider() {
     goTo(i, i > current ? "right" : "left");
     resetTimer();
   };
+
+  // ── Touch handlers ──────────────────────────────────────────
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = null;
+    isSwiping.current = false;
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+    if (
+      touchStartX.current !== null &&
+      Math.abs(touchEndX.current - touchStartX.current) > SWIPE_THRESHOLD
+    ) {
+      isSwiping.current = true;
+    }
+  };
+
+  const onTouchEnd = () => {
+    if (
+      !isSwiping.current ||
+      touchStartX.current === null ||
+      touchEndX.current === null
+    )
+      return;
+    const delta = touchStartX.current - touchEndX.current;
+    if (delta > SWIPE_THRESHOLD) {
+      // swipe kiri → next
+      handleNext();
+    } else if (delta < -SWIPE_THRESHOLD) {
+      // swipe kanan → prev
+      handlePrev();
+    }
+    touchStartX.current = null;
+    touchEndX.current = null;
+    isSwiping.current = false;
+  };
+
+  // ── Banner click (hanya kalau bukan swipe) ──────────────────
   const handleBannerClick = () => {
+    if (isSwiping.current) return; // abaikan kalau habis swipe
     const href = banners[current].ctaHref;
     if (href.startsWith("#")) {
       const el = document.getElementById(href.slice(1));
@@ -113,16 +158,13 @@ export default function BannerSlider() {
 
   return (
     <div className="relative w-full overflow-hidden rounded-2xl select-none group">
-      {/* 
-        Aspect ratio: 
-        - Mobile: 16/7 (lebih crop, headline tetap kelihatan)
-        - md+: 16/5 (landscape full seperti design aslinya)
-        Gambar asli ~1500x500 (3:1), kita kasih sedikit ruang lebih tinggi di mobile
-      */}
       <div
         className="relative w-full cursor-pointer"
         style={{ aspectRatio: "16/6" }}
         onClick={handleBannerClick}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
         {banners.map((b, i) => (
           <div
@@ -131,16 +173,8 @@ export default function BannerSlider() {
               i === current
                 ? "opacity-100 translate-x-0 z-10"
                 : i < current
-                  ? `opacity-0 z-0 ${
-                      direction === "right"
-                        ? "-translate-x-full"
-                        : "translate-x-full"
-                    }`
-                  : `opacity-0 z-0 ${
-                      direction === "right"
-                        ? "translate-x-full"
-                        : "-translate-x-full"
-                    }`
+                  ? `opacity-0 z-0 ${direction === "right" ? "-translate-x-full" : "translate-x-full"}`
+                  : `opacity-0 z-0 ${direction === "right" ? "translate-x-full" : "-translate-x-full"}`
             }`}
           >
             <Image
@@ -155,20 +189,24 @@ export default function BannerSlider() {
           </div>
         ))}
 
-        {/* Nav Arrows — hidden on mobile, visible on hover di desktop */}
+        {/* Nav Arrows
+            - Mobile  : selalu visible, ukuran lebih kecil (w-7 h-7)
+            - Desktop : muncul saat hover group (opacity-0 group-hover:opacity-100)
+        */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             handlePrev();
           }}
           aria-label="Banner sebelumnya"
-          className="cursor-pointer absolute left-3 top-1/2 -translate-y-1/2 z-20
-            w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/30 backdrop-blur-sm
+          className="cursor-pointer absolute left-2 top-1/2 -translate-y-1/2 z-20
+            w-7 h-7 md:w-10 md:h-10 rounded-full bg-black/30 backdrop-blur-sm
             flex items-center justify-center text-white
-            opacity-0 group-hover:opacity-100 transition-opacity duration-200
+            opacity-100 lg:opacity-0 lg:group-hover:opacity-100
+            transition-opacity duration-200
             hover:bg-black/50 active:scale-95"
         >
-          <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
+          <ChevronLeft className="h-3.5 w-3.5 lg:h-5 lg:w-5" />
         </button>
         <button
           onClick={(e) => {
@@ -176,13 +214,14 @@ export default function BannerSlider() {
             handleNext();
           }}
           aria-label="Banner berikutnya"
-          className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 z-20
-            w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/30 backdrop-blur-sm
+          className="cursor-pointer absolute right-2 top-1/2 -translate-y-1/2 z-20
+            w-7 h-7 md:w-10 md:h-10 rounded-full bg-black/30 backdrop-blur-sm
             flex items-center justify-center text-white
-            opacity-0 group-hover:opacity-100 transition-opacity duration-200
+            opacity-100 lg:opacity-0 lg:group-hover:opacity-100
+            transition-opacity duration-200
             hover:bg-black/50 active:scale-95"
         >
-          <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
+          <ChevronRight className="h-3.5 w-3.5 lg:h-5 lg:w-5" />
         </button>
 
         {/* Dots */}

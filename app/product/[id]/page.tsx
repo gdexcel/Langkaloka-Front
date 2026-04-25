@@ -13,6 +13,7 @@ import ProductCard from "@/components/products/ProductCard";
 import { TutorialPesanProduct } from "@/components/popup/TutorialPesanProduct"; // ← NEW
 import Link from "next/link";
 import axios from "axios";
+import { Lightbox } from "@/components/ui/lightbox";
 import {
   MapPin,
   Heart,
@@ -258,8 +259,6 @@ export default function ProductDetailPage() {
     close: closeLightbox,
     prev: handlePrev,
     next: handleNext,
-    handleTouchStart,
-    handleTouchEnd,
   } = useLightbox(imageList);
 
   useEffect(() => {
@@ -778,163 +777,15 @@ export default function ProductDetailPage() {
 
       {/* ── LIGHTBOX ─────────────────────────────────────────────────────────── */}
       {isLightboxOpen && imageList.length > 0 && (
-        <div
-          className="fixed inset-0 z-[999] flex items-center justify-center"
-          style={{
-            background: "rgba(0,0,0,0.96)",
-            animation: "fadeIn 0.2s ease",
-          }}
-          onClick={closeLightbox}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          <style>{`
-            @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
-            @keyframes scaleIn { from { opacity:0; transform:scale(0.96) } to { opacity:1; transform:scale(1) } }
-          `}</style>
-
-          <div
-            className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-4 py-3"
-            style={{
-              background:
-                "linear-gradient(to bottom, rgba(0,0,0,0.7), transparent)",
-            }}
-          >
-            <div
-              className="flex items-center gap-1.5 rounded-full px-3 py-1.5"
-              style={{
-                background: "rgba(255,255,255,0.12)",
-                backdropFilter: "blur(8px)",
-              }}
-            >
-              {imageList.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveIndex(i);
-                  }}
-                  className="rounded-full transition-all duration-300"
-                  style={{
-                    width: i === activeIndex ? 18 : 6,
-                    height: 6,
-                    background:
-                      i === activeIndex ? "#fff" : "rgba(255,255,255,0.4)",
-                  }}
-                />
-              ))}
-            </div>
-            <span
-              className="text-sm font-medium"
-              style={{ color: "rgba(255,255,255,0.8)" }}
-            >
-              {activeIndex + 1} / {imageList.length}
-            </span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                closeLightbox();
-              }}
-              className="flex items-center justify-center rounded-full transition-all active:scale-95"
-              style={{
-                width: 40,
-                height: 40,
-                background: "rgba(255,255,255,0.12)",
-                backdropFilter: "blur(8px)",
-                border: "1px solid rgba(255,255,255,0.15)",
-              }}
-            >
-              <X className="h-5 w-5 text-white" />
-            </button>
-          </div>
-
-          <div
-            className="relative flex h-full w-full items-center justify-center px-14"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              key={activeIndex}
-              src={imageList[activeIndex]}
-              alt={`${product.name} - foto ${activeIndex + 1}`}
-              draggable={false}
-              className="max-h-[85dvh] max-w-full select-none object-contain"
-              style={{ animation: "scaleIn 0.2s ease" }}
-            />
-          </div>
-
-          {imageList.length > 1 && (
-            <>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePrev();
-                }}
-                className="absolute left-2 top-1/2 z-20 flex -translate-y-1/2 items-center justify-center rounded-full transition-all active:scale-95 hover:scale-105 md:left-5"
-                style={{
-                  width: 44,
-                  height: 44,
-                  background: "rgba(255,255,255,0.12)",
-                  backdropFilter: "blur(8px)",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                }}
-              >
-                <ChevronLeft className="h-5 w-5 text-white" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleNext();
-                }}
-                className="absolute right-2 top-1/2 z-20 flex -translate-y-1/2 items-center justify-center rounded-full transition-all active:scale-95 hover:scale-105 md:right-5"
-                style={{
-                  width: 44,
-                  height: 44,
-                  background: "rgba(255,255,255,0.12)",
-                  backdropFilter: "blur(8px)",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                }}
-              >
-                <ChevronRight className="h-5 w-5 text-white" />
-              </button>
-              <div
-                className="absolute bottom-0 left-0 right-0 z-20 px-4 py-4"
-                style={{
-                  background:
-                    "linear-gradient(to top, rgba(0,0,0,0.7), transparent)",
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex justify-center gap-2 overflow-x-auto pb-1">
-                  {imageList.map((url, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveIndex(i)}
-                      className="flex-shrink-0 overflow-hidden rounded-lg transition-all duration-200"
-                      style={{
-                        width: 52,
-                        height: 52,
-                        border:
-                          i === activeIndex
-                            ? "2px solid rgba(255,255,255,0.9)"
-                            : "2px solid rgba(255,255,255,0.2)",
-                        opacity: i === activeIndex ? 1 : 0.55,
-                        transform:
-                          i === activeIndex ? "scale(1.05)" : "scale(1)",
-                      }}
-                    >
-                      <img
-                        src={url}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        draggable={false}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+        <Lightbox
+          images={imageList}
+          activeIndex={activeIndex}
+          productName={product.name}
+          onClose={closeLightbox}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          onSelect={setActiveIndex}
+        />
       )}
     </main>
   );

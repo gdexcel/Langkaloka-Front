@@ -1,10 +1,11 @@
-// langkaloka-v1\app\store-panel\transactions\page.tsx
+// langkaloka-v1/app/store-panel/transactions/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { CheckCircle2, Clock, Receipt } from "lucide-react";
-import Image from "next/image";
+import { Receipt } from "lucide-react";
+import { TransactionCard } from "@/components/transaction/TransactionCard";
+import { Lightbox } from "@/components/ui/lightbox";
 
 type Transaction = {
   id: string;
@@ -18,6 +19,7 @@ type Transaction = {
 export default function SellerTransactionsPage() {
   const [data, setData] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
@@ -53,6 +55,9 @@ export default function SellerTransactionsPage() {
     }
   };
 
+  // Lightbox: wrap single URL as array
+  const lightboxImages = lightboxUrl ? [lightboxUrl] : [];
+
   return (
     <div className="space-y-5">
       {/* Header */}
@@ -86,7 +91,6 @@ export default function SellerTransactionsPage() {
           ))}
         </div>
       ) : data.length === 0 ? (
-        /* Empty state */
         <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100">
             <Receipt className="h-7 w-7 text-gray-400" />
@@ -99,63 +103,29 @@ export default function SellerTransactionsPage() {
           </div>
         </div>
       ) : (
-        /* Transaction Grid */
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {data.map((tx) => (
-            <div
+            <TransactionCard
               key={tx.id}
-              className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md"
-            >
-              {/* Proof image */}
-              <div className="relative h-36 w-full shrink-0 bg-gray-100 sm:h-40">
-                {tx.proof && (
-                  <Image
-                    src={tx.proof}
-                    alt="Bukti transfer"
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                )}
-              </div>
-
-              {/* Info */}
-              <div className="flex flex-1 flex-col gap-1 p-3">
-                <p className="line-clamp-1 text-sm font-semibold text-gray-900">
-                  {tx.productName || "Produk"}
-                </p>
-
-                {tx.createdAt && (
-                  <p className="text-[11px] text-gray-400">
-                    {new Date(tx.createdAt).toLocaleDateString("id-ID", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </p>
-                )}
-
-                {/* Status / Action */}
-                <div className="mt-auto pt-2">
-                  {tx.status === "approved" ? (
-                    <div className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-100 bg-emerald-50 py-2 text-xs font-semibold text-emerald-600">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      Disetujui
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleApprove(tx)}
-                      className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-600 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 active:scale-95"
-                    >
-                      <Clock className="h-3.5 w-3.5" />
-                      Approve
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
+              tx={tx}
+              onApprove={handleApprove}
+              onImageClick={(url) => setLightboxUrl(url)}
+            />
           ))}
         </div>
+      )}
+
+      {/* Lightbox */}
+      {lightboxUrl && (
+        <Lightbox
+          images={lightboxImages}
+          activeIndex={0}
+          productName="Bukti Transfer"
+          onClose={() => setLightboxUrl(null)}
+          onPrev={() => {}}
+          onNext={() => {}}
+          onSelect={() => {}}
+        />
       )}
     </div>
   );
