@@ -296,7 +296,7 @@ export function Header() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari barang preloved..."
+                placeholder="Cari produk..."
                 className="h-10 w-full rounded-full border border-gray-200 bg-gray-50 pl-10 pr-20 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
               />
               <button

@@ -52,25 +52,6 @@ export default function SectionFeedback() {
           <b>Mobile:</b> Tap ☰ → pilih menu Feedback.
         </p>
       </div>
-
-      {/* Form */}
-      <div className="flex flex-col gap-2.5">
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Tulis kritik atau saranmu untuk Langkaloka..."
-          rows={4}
-          className="w-full border-[1.5px] border-blue-100 focus:border-blue-700 outline-none rounded-xl px-3.5 py-3 text-[13px] text-gray-800 placeholder:text-gray-400 resize-none transition-colors"
-        />
-        <button
-          onClick={handleSend}
-          className={`w-full py-3 rounded-xl text-sm font-bold text-white transition-all active:scale-[0.98] ${
-            sent ? "bg-green-600" : "bg-blue-700 hover:bg-blue-800"
-          }`}
-        >
-          {sent ? "✓ Terima kasih!" : "Kirim Feedback →"}
-        </button>
-      </div>
     </section>
   );
 }

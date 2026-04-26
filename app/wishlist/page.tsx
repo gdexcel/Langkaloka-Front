@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { Heart, Loader2, Trash2, AlertCircle } from "lucide-react";
 import { useState, useTransition } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 type Favorite = {
   favoriteId: string;
@@ -46,7 +47,7 @@ export default function WishlistPage() {
         queryClient.invalidateQueries({ queryKey: ["favorites"] });
       } catch (err) {
         console.error("Remove failed", err);
-        alert("Gagal menghapus dari wishlist");
+        toast.success("Gagal menghapus dari wishlist");
       }
     });
   };

@@ -1,16 +1,10 @@
 "use client";
 
-import { useState } from "react";
-
-const ADMIN_WA = "08123456789"; // Ganti dengan nomor admin asli
+const ADMIN_WA = "6281936106331";
 
 export default function SectionLapor() {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(ADMIN_WA).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+  const handleWA = () => {
+    window.open(`https://wa.me/${ADMIN_WA}`, "_blank");
   };
 
   return (
@@ -41,8 +35,8 @@ export default function SectionLapor() {
       </div>
 
       <button
-        onClick={handleCopy}
-        className="w-full flex items-center justify-center gap-2.5 bg-[#25D366] hover:bg-[#1ebe5d] active:scale-[0.98] text-white text-sm font-bold py-3.5 px-5 rounded-xl transition-all"
+        onClick={handleWA}
+        className="w-full flex items-center justify-center gap-2.5 bg-green-500 hover:bg-[#1ebe5d] active:scale-[0.98] text-white text-sm font-bold py-3.5 px-5 rounded-xl transition-all"
       >
         <svg className="w-5 h-5" viewBox="0 0 20 20" fill="none">
           <path
@@ -56,12 +50,6 @@ export default function SectionLapor() {
         </svg>
         Hubungi Admin via WhatsApp
       </button>
-
-      {copied && (
-        <p className="text-center text-xs text-blue-700 font-semibold mt-2">
-          ✓ Nomor admin berhasil disalin!
-        </p>
-      )}
     </section>
   );
 }

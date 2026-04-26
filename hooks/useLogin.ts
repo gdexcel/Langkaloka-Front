@@ -23,7 +23,7 @@ export const useLogin = ({
   onError,
 }: {
   onSuccess?: () => void;
-  onError?: () => void; // ← tambah ini
+  onError?: () => void; //
 }) => {
   const queryClient = useQueryClient();
 
@@ -39,6 +39,7 @@ export const useLogin = ({
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.user.id);
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      toast.success(`Selamat datang, ${data.user.name}! 👋`);
       onSuccess?.();
     },
 

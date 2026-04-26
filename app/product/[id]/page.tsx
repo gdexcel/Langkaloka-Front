@@ -1,4 +1,3 @@
-//langkaloka-v1\app\product\[id]\page.tsx
 "use client";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -8,9 +7,8 @@ import { useProduct } from "@/hooks/useProduct";
 import { useProducts } from "@/hooks/useProducts";
 import { useLightbox } from "@/hooks/useLightbox";
 import { Header } from "@/components/views/Header";
-import { LoginForm } from "@/components/views/fragments/LoginForm";
 import ProductCard from "@/components/products/ProductCard";
-import { TutorialPesanProduct } from "@/components/popup/TutorialPesanProduct"; // ← NEW
+import { TutorialPesanProduct } from "@/components/popup/TutorialPesanProduct";
 import Link from "next/link";
 import axios from "axios";
 import { Lightbox } from "@/components/ui/lightbox";
@@ -30,6 +28,8 @@ import {
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { useAuthModal } from "@/app/providers";
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 function truncateLocation(loc: string, maxWords = 3): string {
@@ -38,34 +38,6 @@ function truncateLocation(loc: string, maxWords = 3): string {
   return words.length <= maxWords
     ? loc
     : words.slice(0, maxWords).join(" ") + "...";
-}
-
-// ─── Login Guard Modal ────────────────────────────────────────────────────────
-function LoginGuardModal({ onClose }: { onClose: () => void }) {
-  return (
-    <div
-      className="fixed inset-0 z-[900] flex items-center justify-center bg-black/60 px-4"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-base font-semibold text-gray-900">
-            Login dulu sayang 😄
-          </p>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <LoginForm onSuccess={onClose} />
-      </div>
-    </div>
-  );
 }
 
 // ─── Store Card ───────────────────────────────────────────────────────────────
@@ -161,16 +133,12 @@ function CTAButtons({
         onClick={onChat}
         className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-blue-600 py-3 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 active:scale-[0.98] cursor-pointer"
       >
-        <MessageCircle className="h-4 w-4 cursor-pointer" />
+        <MessageCircle className="h-4 w-4" />
         Chat Seller
       </button>
       <button
         onClick={onUpload}
-        className={`flex-1 rounded-xl py-3 text-sm font-semibold cursor-pointer text-white transition  active:scale-[0.98] ${
-          alreadyUploaded
-            ? "bg-green-500 hover:bg-green-600"
-            : "bg-blue-600 hover:bg-blue-700"
-        }`}
+        className={`flex-1 rounded-xl py-3 text-sm font-semibold cursor-pointer text-white transition active:scale-[0.98] ${alreadyUploaded ? "bg-green-500 hover:bg-green-600" : "bg-blue-600 hover:bg-blue-700"}`}
       >
         {alreadyUploaded ? "✔ Sudah Bayar" : "Saya Sudah Bayar"}
       </button>
@@ -178,17 +146,14 @@ function CTAButtons({
   );
 }
 
-// Sembunyikan Deskripsi
+// ─── Expandable Description ───────────────────────────────────────────────────
 function ExpandableDescription({ text }: { text: string }) {
   const [expanded, setExpanded] = useState(false);
   const isLong = text.length > 150;
-
   return (
     <div>
       <p
-        className={`whitespace-pre-wrap text-sm leading-relaxed text-gray-600 ${
-          !expanded && isLong ? "line-clamp-4" : ""
-        }`}
+        className={`whitespace-pre-wrap text-sm leading-relaxed text-gray-600 ${!expanded && isLong ? "line-clamp-4" : ""}`}
       >
         {text}
       </p>
@@ -220,6 +185,7 @@ export default function ProductDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const queryClient = useQueryClient();
+  const { openLogin } = useAuthModal();
 
   const { data: allProducts = [] } = useProducts();
   const recommendations = [...allProducts]
@@ -231,7 +197,6 @@ export default function ProductDetailPage() {
   const [showUpload, setShowUpload] = useState(false);
   const [alreadyUploaded, setAlreadyUploaded] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [showLoginGuard, setShowLoginGuard] = useState(false);
 
   const { data: product, isLoading: productLoading } = useProduct(id);
   const { data: user } = useCurrentUser();
@@ -271,9 +236,7 @@ export default function ProductDetailPage() {
         });
         if (res.data) setAlreadyUploaded(true);
       } catch (error: any) {
-        if (error?.response?.status !== 401) {
-          console.error(error);
-        }
+        if (error?.response?.status !== 401) console.error(error);
       }
     };
     checkUpload();
@@ -281,7 +244,7 @@ export default function ProductDetailPage() {
 
   const requireAuth = (fn: () => void) => {
     if (!isAuthenticated) {
-      setShowLoginGuard(true);
+      openLogin();
       return;
     }
     fn();
@@ -319,7 +282,7 @@ export default function ProductDetailPage() {
         { isSold: value },
         { headers: { Authorization: `Bearer ${t}` } },
       );
-      alert(
+      toast.success(
         value
           ? "Produk berhasil ditandai SOLD"
           : "Batalkan Tandai Terjual berhasil",
@@ -327,6 +290,7 @@ export default function ProductDetailPage() {
       router.refresh();
     } catch (err) {
       console.error(err);
+      toast.error("Gagal memperbarui status produk");
     }
   };
 
@@ -347,7 +311,7 @@ export default function ProductDetailPage() {
   const handleSudahBayar = () =>
     requireAuth(() => {
       if (alreadyUploaded) {
-        alert("Kamu sudah mengirimkan bukti pembayaran");
+        toast.success("Kamu sudah mengirimkan bukti pembayaran");
         return;
       }
       setShowUpload(true);
@@ -355,7 +319,7 @@ export default function ProductDetailPage() {
 
   const handleUpload = async () => {
     if (!file) {
-      alert("Pilih gambar dulu");
+      toast.error("Pilih gambar dulu");
       return;
     }
     try {
@@ -371,16 +335,16 @@ export default function ProductDetailPage() {
         { productId: id, proof: uploadRes.data.url },
         { headers: { Authorization: `Bearer ${t}` } },
       );
-      alert("Bukti transfer berhasil dikirim!");
+      toast.success("Bukti transfer berhasil dikirim!");
       setShowUpload(false);
       setFile(null);
       setAlreadyUploaded(true);
     } catch (err) {
       console.error(err);
+      toast.error("Gagal mengirim bukti transfer");
     }
   };
 
-  // ─── Loading ───────────────────────────────────────────────────────────────
   if (productLoading) {
     return (
       <main className="min-h-screen bg-gray-50">
@@ -411,17 +375,14 @@ export default function ProductDetailPage() {
 
   const shortLocation = truncateLocation(product.storeLocation || "");
 
-  // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <main className="min-h-screen bg-gray-50">
       <Header />
 
-      {/* ── KONTEN UTAMA ─────────────────────────────────────────────────────── */}
       <div className="mx-auto max-w-6xl px-0 pb-6 md:px-6 md:pt-6">
         <div className="md:grid md:grid-cols-[1fr_360px] md:items-start md:gap-6">
-          {/* ── LEFT ──────────────────────────────────────────────────────────── */}
+          {/* ── LEFT ── */}
           <div>
-            {/* Gambar utama */}
             <div className="relative overflow-hidden bg-white md:rounded-2xl">
               {imageList.length > 0 ? (
                 <img
@@ -436,14 +397,12 @@ export default function ProductDetailPage() {
                 </div>
               )}
 
-              {/* SOLD badge */}
               {product.isSold && (
                 <div className="absolute left-3 top-3 rounded-md bg-red-500 px-2.5 py-1 text-xs font-bold tracking-wide text-white shadow">
                   TERJUAL
                 </div>
               )}
 
-              {/* Favorite button */}
               <button
                 onClick={toggleFavorite}
                 className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow backdrop-blur-sm transition hover:scale-105 active:scale-95"
@@ -457,7 +416,6 @@ export default function ProductDetailPage() {
                 )}
               </button>
 
-              {/* Arrows */}
               {imageList.length > 1 && (
                 <>
                   <button
@@ -485,18 +443,13 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* Thumbnail strip */}
             {imageList.length > 1 && (
               <div className="flex gap-2 overflow-x-auto bg-white px-3 pb-3 pt-2 md:rounded-b-2xl">
                 {imageList.map((url, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveIndex(i)}
-                    className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
-                      i === activeIndex
-                        ? "border-blue-600 opacity-100"
-                        : "border-transparent opacity-50 hover:opacity-80"
-                    }`}
+                    className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all ${i === activeIndex ? "border-blue-600 opacity-100" : "border-transparent opacity-50 hover:opacity-80"}`}
                   >
                     <img
                       src={url}
@@ -534,7 +487,7 @@ export default function ProductDetailPage() {
                 }).format(product.price)}
               </p>
             </div>
-            {/* Toko — mobile only */}
+
             <div className="mt-px bg-white px-4 py-4 md:hidden">
               <h2 className="mb-3 text-sm font-semibold text-gray-900">
                 Informasi Toko
@@ -542,7 +495,6 @@ export default function ProductDetailPage() {
               <StoreCard product={product} shortLocation={shortLocation} />
             </div>
 
-            {/* Trust badges — mobile only */}
             <div className="mt-px bg-white px-4 py-3 md:hidden">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -557,7 +509,7 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* ── RIGHT SIDEBAR (desktop) ───────────────────────────────────────── */}
+          {/* ── RIGHT SIDEBAR (desktop) ── */}
           <div className="hidden md:flex md:flex-col md:gap-4">
             <div className="bg-white px-4 py-4 md:mt-4 md:rounded-2xl md:px-5">
               <div className="mb-2 flex flex-wrap gap-2">
@@ -586,9 +538,6 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="rounded-2xl bg-white p-4 shadow-sm">
-              {/* ── [PLACEMENT 1] Desktop: di atas CTA buttons ─────────────────
-                  Diletakkan di sini karena user yang mau transaksi
-                  paling butuh panduan tepat sebelum klik tombol.      */}
               {!isOwner && !product.isSold && (
                 <div className="mb-3 flex items-center gap-1.5 text-xs text-gray-400">
                   <TutorialPesanProduct />
@@ -643,16 +592,12 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* ── Deskripsi ──────────────────────────────────────────────────────── */}
-        {/* ── [PLACEMENT 2] Di header "Deskripsi Produk" — muncul di mobile & desktop
-            Paling relevan karena user yang baca deskripsi = user yang sedang
-            mempertimbangkan beli → butuh tahu alur pemesanan.           */}
+        {/* ── Deskripsi ── */}
         <div className="mt-px bg-white px-4 py-4 md:mt-4 md:rounded-2xl md:px-5">
           <div className="mb-2 flex items-center gap-1.5">
             <h2 className="text-sm font-semibold text-gray-900">
               Deskripsi Produk
             </h2>
-            {/* Icon ? muncul di semua ukuran layar */}
             <TutorialPesanProduct />
           </div>
           <ExpandableDescription
@@ -661,7 +606,7 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* ── REKOMENDASI ──────────────────────────────────────────────────────── */}
+      {/* ── Rekomendasi ── */}
       {recommendations.length > 0 && (
         <section className="mx-auto max-w-6xl px-4 pb-28 pt-2 md:pb-10">
           <div className="mb-3 flex items-center justify-between">
@@ -686,10 +631,7 @@ export default function ProductDetailPage() {
         </section>
       )}
 
-      {/* ── STICKY BOTTOM CTA (mobile) ───────────────────────────────────────── */}
-      {/* ── [PLACEMENT 3] Mobile sticky bar: icon di kiri luar tombol
-          Area paling sering dilihat user mobile saat mau transaksi.
-          Hanya tampil kalau bukan owner & produk belum sold.           */}
+      {/* ── Sticky Bottom CTA (mobile) ── */}
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-100 bg-white px-4 py-3 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] md:hidden">
         {!isOwner && !product.isSold && (
           <div className="mb-2 flex items-center gap-1.5 text-xs text-gray-400">
@@ -708,7 +650,7 @@ export default function ProductDetailPage() {
         />
       </div>
 
-      {/* ── MODAL UPLOAD ─────────────────────────────────────────────────────── */}
+      {/* ── Modal Upload ── */}
       {showUpload && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
@@ -742,7 +684,7 @@ export default function ProductDetailPage() {
                   if (!e.target.files) return;
                   const f = e.target.files[0];
                   if (f.size > 2 * 1024 * 1024) {
-                    alert("Max 2MB");
+                    toast.error("Max 2MB");
                     return;
                   }
                   setFile(f);
@@ -770,12 +712,7 @@ export default function ProductDetailPage() {
         </div>
       )}
 
-      {/* ── LOGIN GUARD ──────────────────────────────────────────────────────── */}
-      {showLoginGuard && (
-        <LoginGuardModal onClose={() => setShowLoginGuard(false)} />
-      )}
-
-      {/* ── LIGHTBOX ─────────────────────────────────────────────────────────── */}
+      {/* ── Lightbox ── */}
       {isLightboxOpen && imageList.length > 0 && (
         <Lightbox
           images={imageList}

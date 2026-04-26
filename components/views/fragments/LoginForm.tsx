@@ -1,3 +1,4 @@
+//langkaloka-v1\components\views\fragments\LoginForm.tsx
 "use client";
 
 import { useState, useRef } from "react";
@@ -117,7 +118,7 @@ export function LoginForm({
         <Button
           type="submit"
           disabled={isPending || !isFormValid || isSubmitting.current}
-          className="mt-1 h-9 w-full text-sm font-medium"
+          className="mt-1 h-9 w-full text-sm font-medium bg-blue-600 text-white"
         >
           {isPending ? "Masuk..." : "Masuk"}
         </Button>

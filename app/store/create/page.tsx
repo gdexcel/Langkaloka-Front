@@ -1,129 +1,114 @@
-"use client"
+"use client";
 
-import axios from "axios"
-import { useState } from "react"
-import { useCreateStore } from "@/hooks/useCreateStore"
-import { Header } from "@/components/views/Header"
-import { useRouter } from "next/navigation"
+import axios from "axios";
+import { useState } from "react";
+import { useCreateStore } from "@/hooks/useCreateStore";
+import { Header } from "@/components/views/Header";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function CreateStorePage() {
+  const router = useRouter();
 
-  const router = useRouter()
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [image, setImage] = useState<File | null>(null);
 
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [location, setLocation] = useState("")
-const [image, setImage] = useState<File | null>(null)
+  const { mutate, isPending } = useCreateStore();
 
-  const { mutate, isPending } = useCreateStore()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-
-  if (!name) {
-    alert("Nama toko wajib diisi")
-    return
-  }
-
-  try {
-
-    let imageUrl = null
-
-    // 🔥 UPLOAD IMAGE
-    if (image) {
-      const reader = new FileReader()
-      reader.readAsDataURL(image)
-
-      const base64 = await new Promise<string>((resolve) => {
-        reader.onloadend = () => resolve(reader.result as string)
-      })
-
-      const uploadRes = await axios.post("/api/upload", {
-        image: base64
-      })
-
-      imageUrl = uploadRes.data.url
+    if (!name) {
+      toast.success("Nama toko wajib diisi");
+      return;
     }
 
-    const token = localStorage.getItem("token")
+    try {
+      let imageUrl = null;
 
-    // 🔥 CREATE STORE
-    await axios.post(
-      "/api/stores/create",
-      {
-        name,
-        description,
-        location,
-        image: imageUrl
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      // 🔥 UPLOAD IMAGE
+      if (image) {
+        const reader = new FileReader();
+        reader.readAsDataURL(image);
+
+        const base64 = await new Promise<string>((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+        });
+
+        const uploadRes = await axios.post("/api/upload", {
+          image: base64,
+        });
+
+        imageUrl = uploadRes.data.url;
       }
-    )
 
-    alert("Store berhasil dibuat 🎉")
+      const token = localStorage.getItem("token");
 
-    router.push("/sell")
+      // 🔥 CREATE STORE
+      await axios.post(
+        "/api/stores/create",
+        {
+          name,
+          description,
+          location,
+          image: imageUrl,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
-  } catch (error: any) {
+      toast.success("Store berhasil dibuat 🎉");
 
-    alert(
-      error?.response?.data?.error ||
-      "Gagal membuat toko"
-    )
+      router.push("/sell");
+    } catch (error: any) {
+      toast.success(error?.response?.data?.error || "Gagal membuat toko");
 
-    console.error(error)
-  }
-}
+      console.error(error);
+    }
+  };
 
   return (
     <main className="min-h-screen">
-
       <Header />
 
       <div className="max-w-xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">Create Your Store</h1>
 
-        <h1 className="text-2xl font-bold mb-6">
-          Create Your Store
-        </h1>
-
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col gap-4"
-        >
-
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
             className="border p-3 rounded"
             placeholder="Store name"
             value={name}
-            onChange={(e)=>setName(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
           />
 
           <textarea
             className="border p-3 rounded"
             placeholder="Store description"
             value={description}
-            onChange={(e)=>setDescription(e.target.value)}
+            onChange={(e) => setDescription(e.target.value)}
           />
           <input
-  className="border p-3 rounded-lg"
-  placeholder="Lokasi toko"
-  value={location}
-  onChange={(e) => setLocation(e.target.value)}
-/>
-<input
-  type="file"
-  accept="image/*"
-  className="border p-3 rounded-lg"
-  onChange={(e) => {
-    if (e.target.files) {
-      setImage(e.target.files[0])
-    }
-  }}
-/>
+            className="border p-3 rounded-lg"
+            placeholder="Lokasi toko"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          />
+          <input
+            type="file"
+            accept="image/*"
+            className="border p-3 rounded-lg"
+            onChange={(e) => {
+              if (e.target.files) {
+                setImage(e.target.files[0]);
+              }
+            }}
+          />
 
           <button
             className="bg-black text-white py-3 rounded disabled:opacity-50"
@@ -131,11 +116,8 @@ const handleSubmit = async (e: React.FormEvent) => {
           >
             {isPending ? "Creating..." : "Create Store"}
           </button>
-
         </form>
-
       </div>
-
     </main>
-  )
+  );
 }

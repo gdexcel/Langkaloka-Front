@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 import { Lightbox } from "@/components/ui/lightbox";
 import { useLightbox } from "@/hooks/useLightbox";
 import { Fullscreen } from "lucide-react";
+import { useAuthModal } from "@/app/providers";
+import { toast } from "sonner";
 
 function getUserIdFromToken(token: string): string | null {
   try {
@@ -42,6 +44,7 @@ export default function StorePage() {
   const [isOwner, setIsOwner] = useState(false);
   const [activeTab, setActiveTab] = useState<"products" | "info">("products");
   const [copied, setCopied] = useState(false);
+  const { openLogin } = useAuthModal();
 
   const storeImage = data?.store?.image ? [data.store.image] : [];
   const {
@@ -91,13 +94,14 @@ export default function StorePage() {
 
   const handleRate = async (star: number) => {
     if (hasRated) {
-      alert("Kamu sudah memberi rating ⭐");
+      toast.error("Kamu sudah memberi rating");
       return;
     }
 
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Login dulu ya 🔐");
+      toast.error("Login dulu untuk memberi rating");
+      openLogin(); // ← ini
       return;
     }
 
@@ -114,17 +118,17 @@ export default function StorePage() {
 
       const result = await res.json();
       if (!res.ok) {
-        alert(result.error);
+        toast.success(result.error);
         return;
       }
 
       setSelectedRating(star);
       setHasRated(true);
       await refetch();
-      alert(`⭐ Terima kasih sudah memberi ${star} bintang!`);
+      toast.success(`Terima kasih sudah memberi ${star} bintang!`);
     } catch (error) {
       console.error(error);
-      alert("Gagal rating");
+      toast.success("Gagal rating");
     } finally {
       setLoading(false);
     }

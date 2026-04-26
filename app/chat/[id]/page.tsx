@@ -7,6 +7,7 @@ import axios from "axios";
 import { Header } from "@/components/views/Header";
 import Pusher from "pusher-js";
 import Link from "next/link";
+import { toast } from "sonner";
 
 /* ─────────────────────────────────────────
    Sticky Product Bar
@@ -400,7 +401,7 @@ export default function ChatPage() {
     if (!text.trim() || sending) return;
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Login dulu");
+      toast.error("Login dulu");
       return;
     }
     setSending(true);

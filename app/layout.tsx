@@ -1,8 +1,10 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "sonner";
+import { Footer } from "@/components/views/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +33,10 @@ export default function RootLayout({
         cz-shortcut-listen="true"
       >
         <Toaster position="top-center" richColors />
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <Footer /> {/* ← pindah ke dalam Providers */}
+        </Providers>
       </body>
     </html>
   );

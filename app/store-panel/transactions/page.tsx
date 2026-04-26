@@ -6,6 +6,7 @@ import axios from "axios";
 import { Receipt } from "lucide-react";
 import { TransactionCard } from "@/components/transaction/TransactionCard";
 import { Lightbox } from "@/components/ui/lightbox";
+import { toast } from "sonner";
 
 type Transaction = {
   id: string;
@@ -47,11 +48,11 @@ export default function SellerTransactionsPage() {
         { transactionId: tx.id, productId: tx.productId },
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      alert("Pembayaran disetujui!");
+      toast.success("Pembayaran disetujui!");
       fetchData();
     } catch (error) {
       console.error(error);
-      alert("Gagal approve");
+      toast.success("Gagal approve");
     }
   };
 

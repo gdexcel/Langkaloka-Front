@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Store, PlusCircle, ImagePlus, X } from "lucide-react";
 import { InfoPopup } from "@/components/popup/InformasiPopupProductSeller";
+import { toast } from "sonner";
 
 type Category = {
   id: string;
@@ -92,7 +93,7 @@ export default function SellPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (imageSlots.filter(Boolean).length === 0) {
-      alert("Minimal 1 foto harus diisi!");
+      toast.success("Minimal 1 foto harus diisi!");
       return;
     }
     setIsSubmitting(true);
@@ -135,11 +136,11 @@ export default function SellPage() {
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      alert("Produk berhasil dipublikasikan!");
+      toast.success("Produk berhasil dipublikasikan!");
       router.push("/");
     } catch (error) {
       console.error(error);
-      alert("Gagal membuat produk. Coba lagi.");
+      toast.success("Gagal membuat produk. Coba lagi.");
     } finally {
       setIsSubmitting(false);
     }

@@ -31,7 +31,7 @@ const banners = [
     src: "/images/banner/3-pembayaran.jpg",
     alt: "Chat, Langsung Bayar – Banner Pembayaran",
     cta: "Pelajari Lebih Lanjut",
-    ctaHref: "/tutorial/cara-pesan",
+    ctaHref: "/tutorial/#bayar",
     accent: "#9333EA",
   },
 ];
